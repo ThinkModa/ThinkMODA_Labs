@@ -1,0 +1,36 @@
+{
+  "name": "thinkmoda-course-builder",
+  "version": "1.0.0",
+  "description": "Thinkmoda Course Builder - Desktop application for course management",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@prisma/client": "^6.13.0",
+    "@supabase/supabase-js": "^2.38.0",
+    "@types/bcryptjs": "^2.4.6",
+    "autoprefixer": "^10.4.16",
+    "bcryptjs": "^3.0.2",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.294.0",
+    "next": "^14.0.0",
+    "postcss": "^8.4.31",
+    "prisma": "^6.13.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "typescript": "^5.0.0"
+  }
+}

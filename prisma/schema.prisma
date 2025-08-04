@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String   // Hashed password
+  role      UserRole @default(BASIC)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Many-to-many relationship with courses
+  courses UserCourse[]
+  
+  // Progress tracking
+  progress UserProgress[]
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  visibility  CourseVisibility @default(OPEN)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // One-to-many relationship with sections
+  sections Section[]
+  
+  // Many-to-many relationship with users
+  users UserCourse[]
+}
+
+model Section {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Foreign key to course
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  // One-to-many relationship with lessons
+  lessons Lesson[]
+}
+
+model Lesson {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   // Stores the /embed and formatting content
+  details   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Foreign key to section
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  
+  // Progress tracking
+  progress UserProgress[]
+}
+
+// Junction table for many-to-many relationship between users and courses
+model UserCourse {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+  
+  // Foreign keys
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+}
+
+// Progress tracking for individual users
+model UserProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Foreign keys
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, lessonId])
+}
+
+enum UserRole {
+  ADMIN
+  BASIC
+}
+
+enum CourseVisibility {
+  OPEN
+  PRIVATE
+}
