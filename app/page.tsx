@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Eye, EyeOff, User, Shield } from 'lucide-react'
+import { authService } from '@/lib/services/auth-supabase'
 
 export default function SignInPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -32,25 +33,16 @@ export default function SignInPage() {
     try {
       if (isSignUp) {
         console.log('Starting signup process...')
-        // Sign up
-        const response = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-          }),
+        // Sign up using Supabase service
+        const result = await authService.signUp({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          password: formData.password,
         })
 
-        const data = await response.json()
-        console.log('Signup response:', data)
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to create account')
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create account')
         }
 
         // Auto sign in after sign up
@@ -70,31 +62,23 @@ export default function SignInPage() {
   }
 
   const handleSignIn = async () => {
-    const response = await fetch('/api/auth/signin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
+    const result = await authService.signIn({
+      email: formData.email,
+      password: formData.password,
     })
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to sign in')
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to sign in')
     }
 
     // Store user data in localStorage (in production, use secure session management)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    console.log('User data stored in localStorage:', data.user)
+    localStorage.setItem('user', JSON.stringify(result.user))
+    console.log('User data stored in localStorage:', result.user)
 
     // Small delay to ensure localStorage is set before redirect
     setTimeout(() => {
       // Redirect based on user role
-      if (data.user.role === 'ADMIN') {
+      if (result.user.role === 'ADMIN') {
         console.log('Redirecting to admin dashboard...')
         window.location.href = '/admin'
       } else {

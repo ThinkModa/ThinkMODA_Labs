@@ -1,6 +1,7 @@
 // Script to migrate data from SQLite to Supabase
 // Run with: node scripts/migrate-to-supabase.js
 
+require('dotenv').config({ path: '.env.local' })
 const { PrismaClient } = require('@prisma/client')
 const { createClient } = require('@supabase/supabase-js')
 

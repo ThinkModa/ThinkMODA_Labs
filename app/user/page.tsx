@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { Play, Clock, User, LogOut, ArrowRight } from 'lucide-react'
-import { courseService, Course } from '@/lib/services/courses'
-import { progressService, UserProgress } from '@/lib/services/progress'
+import { courseService } from '@/lib/services/courses-supabase'
+import { progressService } from '@/lib/services/progress-supabase'
+import { authService } from '@/lib/services/auth-supabase'
 
 export default function UserLandingPage() {
   const [assignedCourses, setAssignedCourses] = useState<any[]>([])
   const [user, setUser] = useState<any>(null)
-  const [userProgress, setUserProgress] = useState<UserProgress[]>([])
+  const [userProgress, setUserProgress] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Check authentication and load user data
@@ -48,7 +49,7 @@ export default function UserLandingPage() {
     return () => clearTimeout(timeout)
   }, [])
 
-  // Load saved courses from API
+  // Load saved courses from Supabase
   useEffect(() => {
     if (!user) return
 
@@ -62,17 +63,17 @@ export default function UserLandingPage() {
           progressService.getUserProgress(user.id)
         ])
         
-        console.log('User side - Loading courses from API:', courses.length, courses)
+        console.log('User side - Loading courses from Supabase:', courses.length, courses)
         console.log('User side - Loading progress:', progress.length, progress)
         
         setUserProgress(progress)
         
         if (courses.length > 0) {
           // Filter to only show OPEN courses
-          const openCourses = courses.filter((course: Course) => course.visibility === 'OPEN')
+          const openCourses = courses.filter((course: any) => course.visibility === 'OPEN')
           
-          const formattedCourses = openCourses.map((course: Course) => {
-            const courseProgress = progressService.calculateCourseProgress(progress, course.id)
+          const formattedCourses = openCourses.map((course: any) => {
+            const courseProgress = progressService.calculateCourseProgress(course, progress)
             
             return {
               id: course.id,
@@ -81,15 +82,15 @@ export default function UserLandingPage() {
               price: "$299.00",
               originalPrice: "$499.00",
               image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop",
-              progress: courseProgress.percentage,
+              progress: courseProgress,
               totalLessons: course.sections.reduce((acc: number, section: any) => acc + section.lessons.length, 0),
-              completedLessons: courseProgress.completedLessons
+              completedLessons: progress.filter((p: any) => p.completed).length
             }
           })
           console.log('User side - Formatted courses with progress:', formattedCourses)
           setAssignedCourses(formattedCourses)
         } else {
-          console.log('User side - No courses found in API')
+          console.log('User side - No courses found in Supabase')
           setAssignedCourses([]) // Clear default courses if none found
         }
       } catch (error) {
@@ -100,24 +101,11 @@ export default function UserLandingPage() {
       }
     }
 
-    // Load courses on mount
     loadCoursesAndProgress()
-
-    // Listen for course updates
-    const handleCourseUpdate = (e: CustomEvent) => {
-      console.log('Course updated, reloading...', e.detail)
-      loadCoursesAndProgress()
-    }
-
-    window.addEventListener('coursesUpdated', handleCourseUpdate)
-
-    return () => {
-      window.removeEventListener('coursesUpdated', handleCourseUpdate)
-    }
   }, [user])
 
   const handleSignOut = () => {
-    localStorage.removeItem('user')
+    authService.signOut()
     window.location.href = '/'
   }
 
