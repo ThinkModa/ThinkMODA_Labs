@@ -73,6 +73,8 @@ export default function CourseBuilderPage() {
     const loadCourses = async () => {
       try {
         console.log('Admin: Starting to load courses...')
+        alert('Admin courses page is loading - check console for details')
+        
         console.log('Admin: courseService type:', typeof courseService)
         console.log('Admin: courseService.getAllCourses type:', typeof courseService.getAllCourses)
         console.log('Admin: Current user from localStorage:', localStorage.getItem('user'))
@@ -93,6 +95,7 @@ export default function CourseBuilderPage() {
         
         if (testError) {
           console.error('Admin: Test query failed:', testError)
+          alert(`Test query failed: ${testError.message}`)
           throw new Error(`Test query failed: ${testError.message}`)
         }
         
@@ -116,6 +119,7 @@ export default function CourseBuilderPage() {
         
         setCourses(courses)
         console.log('Admin: Courses set in state:', courses.length)
+        alert(`Successfully loaded ${courses.length} courses`)
       } catch (error: any) {
         console.error('Admin: Error loading courses:', error)
         console.error('Admin: Error details:', {
@@ -123,6 +127,7 @@ export default function CourseBuilderPage() {
           stack: error.stack,
           name: error.name
         })
+        alert(`Error loading courses: ${error.message}`)
         setCourses([])
       }
     }
