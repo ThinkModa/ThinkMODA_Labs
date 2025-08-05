@@ -40,6 +40,8 @@ export default function AdminDashboard() {
       try {
         const user = JSON.parse(userData)
         console.log('Admin Dashboard - User data parsed:', user)
+        console.log('Admin Dashboard - User email:', user.email)
+        console.log('Admin Dashboard - User role:', user.role)
         
         // Check if user is admin
         if (user.role !== 'ADMIN') {
