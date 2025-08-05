@@ -1,0 +1,37 @@
+# Cursor Rules for ThinkMODA Labs
+# Auto-commit and deployment workflow
+
+## Auto-Commit Instructions
+After making any changes to the codebase, automatically run:
+```bash
+./scripts/auto-commit.sh
+```
+
+This will:
+1. Check for changes
+2. Commit with timestamp
+3. Push to GitHub
+4. Trigger automatic deployment
+
+## Development Workflow
+1. Make changes in Cursor
+2. Test locally with `./start-dev.sh`
+3. Run auto-commit script
+4. Wait for GitHub Actions to deploy
+5. Check live site at https://think-moda-labs.vercel.app
+
+## File Structure
+- `app/` - Next.js application pages
+- `lib/services/` - Supabase service layer
+- `scripts/` - Utility scripts
+- `.github/workflows/` - GitHub Actions
+
+## Environment Variables
+All Supabase environment variables are configured in Vercel dashboard and GitHub secrets.
+
+## Mobile Development
+When editing from mobile:
+1. Make changes in Cursor
+2. Run auto-commit script
+3. Monitor deployment in GitHub Actions
+4. Check live site for updates 
