@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import type { UserProgress } from '@/lib/supabase'
 
+// Re-export types for compatibility
+export type { UserProgress }
+
 export const progressService = {
   // Get user progress
   async getUserProgress(userId: string): Promise<UserProgress[]> {

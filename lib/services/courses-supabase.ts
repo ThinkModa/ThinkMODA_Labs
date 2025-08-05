@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import type { Course, Section, Lesson } from '@/lib/supabase'
 
+// Re-export types for compatibility
+export type { Course, Section, Lesson }
+
 export interface CourseWithSections extends Course {
   sections: (Section & {
     lessons: Lesson[]

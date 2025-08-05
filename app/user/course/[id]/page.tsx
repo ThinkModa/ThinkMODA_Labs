@@ -64,12 +64,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         setUserProgress(progress)
         
         // Set first lesson as selected by default if no lesson is currently selected
-        if (!selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons.length > 0) {
+        if (foundCourse && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons.length > 0) {
           const firstLesson = foundCourse.sections[0].lessons[0]
           setSelectedLesson(firstLesson.id)
           setCurrentLessonContent(firstLesson.content)
           console.log('User side - Set first lesson:', firstLesson.title, 'Content:', firstLesson.content)
-        } else if (selectedLesson) {
+        } else if (foundCourse && selectedLesson) {
           // Update current lesson content if lesson is still selected
           for (const section of foundCourse.sections) {
             const lesson = section.lessons.find((l: any) => l.id === selectedLesson)
@@ -136,12 +136,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   }
 
   const totalLessons = course.sections.reduce((acc: number, section: any) => acc + section.lessons.length, 0)
-  const completedCount = userProgress.filter(p => p.completed && course.sections.some((s: any) => s.lessons.some((l: any) => l.id === p.lessonId))).length
+  const completedCount = userProgress.filter(p => p.completed && course.sections.some((s: any) => s.lessons.some((l: any) => l.id === p.lesson_id))).length
   const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0
 
   // Helper functions for progression system
   const isLessonCompleted = (lessonId: string) => {
-    return userProgress.some(p => p.lessonId === lessonId && p.completed)
+    return userProgress.some(p => p.lesson_id === lessonId && p.completed)
   }
 
   const isSectionCompleted = (section: any) => {
@@ -430,23 +430,23 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
       
       // Update local progress state
       setUserProgress(prev => {
-        const existing = prev.find(p => p.lessonId === lessonId)
+        const existing = prev.find(p => p.lesson_id === lessonId)
         if (existing) {
           return prev.map(p => 
-            p.lessonId === lessonId 
-              ? { ...p, completed, completedAt: completed ? new Date().toISOString() : null }
+            p.lesson_id === lessonId 
+              ? { ...p, completed, completed_at: completed ? new Date().toISOString() : null }
               : p
           )
         } else {
           // Add new progress entry
           return [...prev, {
             id: Date.now().toString(), // Temporary ID
-            userId: user.id,
-            lessonId,
+            user_id: user.id,
+            lesson_id: lessonId,
             completed,
-            completedAt: completed ? new Date().toISOString() : null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            completed_at: completed ? new Date().toISOString() : null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
             lesson: {
               id: lessonId,
               title: '', // Will be filled by the API
