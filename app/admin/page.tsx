@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   User, 
   LogOut, 
@@ -18,13 +18,52 @@ import {
   Award,
   TrendingUp
 } from 'lucide-react'
+import { authService } from '@/lib/services/auth-supabase'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const userData = localStorage.getItem('user')
+      console.log('Admin Dashboard - Checking auth, userData:', userData)
+      
+      if (!userData) {
+        console.log('Admin Dashboard - No user data found, redirecting to sign-in')
+        window.location.href = '/'
+        return
+      }
+
+      try {
+        const user = JSON.parse(userData)
+        console.log('Admin Dashboard - User data parsed:', user)
+        
+        // Check if user is admin
+        if (user.role !== 'ADMIN') {
+          console.log('Admin Dashboard - User is not admin, redirecting to user dashboard')
+          window.location.href = '/user'
+          return
+        }
+        
+        console.log('Admin Dashboard - Admin user authenticated:', user)
+        setUser(user)
+      } catch (error) {
+        console.error('Admin Dashboard - Error parsing user data:', error)
+        localStorage.removeItem('user')
+        window.location.href = '/'
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   const handleSignOut = () => {
-    // TODO: Implement sign out logic
-    console.log('Admin sign out clicked')
+    authService.signOut()
     window.location.href = '/'
   }
 
@@ -70,6 +109,29 @@ export default function AdminDashboard() {
       onClick: () => console.log('Analytics clicked')
     }
   ]
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Access denied. Redirecting...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -119,8 +181,8 @@ export default function AdminDashboard() {
               <User size={16} className="text-gray-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">rod@thinkmoda.co</p>
-              <p className="text-xs text-gray-500">Super_admin</p>
+              <p className="text-sm font-medium text-gray-900">{user.email}</p>
+              <p className="text-xs text-gray-500">{user.role}</p>
             </div>
           </div>
           <button
