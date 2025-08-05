@@ -14,7 +14,7 @@ WHERE email LIKE '%admin%' OR role = 'ADMIN';
 
 -- Delete any existing admin users
 DELETE FROM users 
-WHERE email = 'admin@thinkmoda.com' OR role = 'ADMIN';
+WHERE email = 'admin@thinkmoda.co' OR role = 'ADMIN';
 
 -- Create fresh admin user with hashed password
 -- Password: Admin123! (hashed with bcrypt)
@@ -33,7 +33,7 @@ INSERT INTO users (
   'admin-user-001',
   'Admin',
   'User',
-  'admin@thinkmoda.com',
+  'admin@thinkmoda.co',
   '$2b$10$xToV3a5CbkkVvxHBuJNniu/yEvn8uCLJQTUDugT7eGWFiobbRYJh6',
   'ADMIN',
   'ThinkMODA Labs',
@@ -53,7 +53,7 @@ SELECT
   phone_number,
   created_at
 FROM users 
-WHERE email = 'admin@thinkmoda.com';
+WHERE email = 'admin@thinkmoda.co';
 
 -- Also check if the password field is properly set
 SELECT 
@@ -65,4 +65,4 @@ SELECT
     ELSE 'Password missing'
   END as password_status
 FROM users 
-WHERE email = 'admin@thinkmoda.com'; 
+WHERE email = 'admin@thinkmoda.co'; 

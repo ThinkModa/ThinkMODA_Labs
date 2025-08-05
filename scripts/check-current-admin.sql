@@ -1,4 +1,4 @@
--- Check and fix admin user in database
+-- Check current admin user and fix email domain
 -- Run this in your Supabase SQL editor
 
 -- First, let's see what users exist
@@ -15,8 +15,8 @@ SELECT
 FROM users 
 ORDER BY created_at DESC;
 
--- Check if admin user exists
-SELECT '=== ADMIN USER CHECK ===' as info;
+-- Check for any admin users
+SELECT '=== ADMIN USERS ===' as info;
 SELECT 
   id,
   first_name,
@@ -25,9 +25,26 @@ SELECT
   role,
   created_at
 FROM users 
-WHERE email = 'admin@thinkmoda.co' OR role = 'ADMIN';
+WHERE role = 'ADMIN';
 
--- If admin user doesn't exist, create it
+-- Check for rod@thinkmoda.co user
+SELECT '=== ROD USER ===' as info;
+SELECT 
+  id,
+  first_name,
+  last_name,
+  email,
+  role,
+  created_at
+FROM users 
+WHERE email = 'rod@thinkmoda.co';
+
+-- Update rod@thinkmoda.co to be admin if it exists
+UPDATE users 
+SET role = 'ADMIN'
+WHERE email = 'rod@thinkmoda.co';
+
+-- Create admin user with correct email domain
 INSERT INTO users (
   id,
   first_name,
@@ -40,7 +57,7 @@ INSERT INTO users (
   created_at,
   updated_at
 ) VALUES (
-  'admin-user-001',
+  'admin-user-002',
   'Admin',
   'User',
   'admin@thinkmoda.co',
@@ -54,24 +71,14 @@ INSERT INTO users (
   role = 'ADMIN',
   updated_at = NOW();
 
--- Verify admin user was created/updated
-SELECT '=== ADMIN USER VERIFICATION ===' as info;
+-- Verify final admin users
+SELECT '=== FINAL ADMIN USERS ===' as info;
 SELECT 
   id,
   first_name,
   last_name,
   email,
   role,
-  company_name,
-  phone_number,
   created_at
 FROM users 
-WHERE email = 'admin@thinkmoda.co';
-
--- Check total user count
-SELECT '=== USER SUMMARY ===' as info;
-SELECT 
-  COUNT(*) as total_users,
-  COUNT(CASE WHEN role = 'ADMIN' THEN 1 END) as admin_users,
-  COUNT(CASE WHEN role = 'BASIC' THEN 1 END) as basic_users
-FROM users; 
+WHERE role = 'ADMIN'; 
