@@ -2,17 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Users, User, Mail, Calendar, BookOpen, CheckCircle, Clock, LogOut } from 'lucide-react'
-import { authService } from '@/lib/services/auth'
-import { courseService } from '@/lib/services/courses'
-import { progressService } from '@/lib/services/progress'
+import { authService } from '@/lib/services/auth-supabase'
+import { courseService } from '@/lib/services/courses-supabase'
+import { progressService } from '@/lib/services/progress-supabase'
+import { supabase } from '@/lib/supabase'
 
 interface User {
   id: string
-  firstName: string
-  lastName: string
+  first_name: string
+  last_name: string
   email: string
-  createdAt: string
-  updatedAt: string
+  company_name?: string
+  phone_number?: string
+  role: 'ADMIN' | 'BASIC'
+  created_at: string
+  updated_at: string
 }
 
 interface Course {
@@ -37,12 +41,12 @@ interface Lesson {
 
 interface UserProgress {
   id: string
-  userId: string
-  lessonId: string
+  user_id: string
+  lesson_id: string
   completed: boolean
-  completedAt: string | null
-  createdAt: string
-  updatedAt: string
+  completed_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 interface UserWithProgress {
@@ -66,14 +70,18 @@ export default function AdminUsersPage() {
         
         // Load all users, courses, and progress data
         const [allUsers, allCourses, allProgress] = await Promise.all([
-          fetch('/api/users').then(res => res.json()),
+          // Get all users from Supabase
+          supabase.from('users').select('*').then(({ data, error }) => {
+            if (error) throw error
+            return data || []
+          }),
           courseService.getAllCourses(),
-          fetch('/api/progress/all').then(res => res.json())
+          progressService.getAllProgress()
         ])
 
         // Process and combine the data
         const usersWithProgress: UserWithProgress[] = allUsers.map((user: User) => {
-          const userProgress = allProgress.filter((p: UserProgress) => p.userId === user.id)
+          const userProgress = allProgress.filter((p: UserProgress) => p.user_id === user.id)
           const userCourses = allCourses // For now, all users have access to all courses
           
           // Calculate progress for each user

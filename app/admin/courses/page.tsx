@@ -17,7 +17,7 @@ import {
   FormInput,
   ChevronDown
 } from 'lucide-react'
-import { courseService, Course, Section, Lesson } from '@/lib/services/courses'
+import { courseService, Course, Section, Lesson } from '@/lib/services/courses-supabase'
 
 export default function CourseBuilderPage() {
   const [courses, setCourses] = useState<Course[]>([])
