@@ -101,7 +101,7 @@ export default function SignInPage() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Thinkmoda Course Builder
+            Welcome to LaunchPad
           </h1>
           <p className="text-gray-600">
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
