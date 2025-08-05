@@ -45,6 +45,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
       try {
         setIsLoading(true)
         
+        console.log('Course page - Loading course with ID:', params.id)
+        
         // Load course and progress in parallel
         const [foundCourse, progress] = await Promise.all([
           courseService.getCourse(params.id),

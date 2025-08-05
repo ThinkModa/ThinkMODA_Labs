@@ -64,6 +64,7 @@ export default function UserLandingPage() {
         ])
         
         console.log('User side - Loading courses from Supabase:', courses.length, courses)
+        console.log('User side - Course IDs:', courses.map(c => ({ id: c.id, title: c.title })))
         console.log('User side - Loading progress:', progress.length, progress)
         
         setUserProgress(progress)
@@ -71,6 +72,7 @@ export default function UserLandingPage() {
         if (courses.length > 0) {
           // Filter to only show OPEN courses
           const openCourses = courses.filter((course: any) => course.visibility === 'OPEN')
+          console.log('User side - Open courses:', openCourses.length, openCourses.map(c => ({ id: c.id, title: c.title })))
           
           const formattedCourses = openCourses.map((course: any) => {
             const courseProgress = progressService.calculateCourseProgress(course, progress)
@@ -100,7 +102,7 @@ export default function UserLandingPage() {
         setIsLoading(false)
       }
     }
-
+    
     loadCoursesAndProgress()
   }, [user])
 
