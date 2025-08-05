@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock } from 'lucide-react'
+import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight } from 'lucide-react'
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 
@@ -17,8 +17,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [userProgress, setUserProgress] = useState<UserProgress[]>([])
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
-    // Check authentication and load user data
+  // Check authentication and load user data
   useEffect(() => {
     const checkAuth = () => {
       const userData = localStorage.getItem('user')
@@ -112,6 +113,18 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
   // Keep track of last courses data for comparison
   const lastCoursesRef = useRef<string | null>(null)
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId)
+      } else {
+        newSet.add(sectionId)
+      }
+      return newSet
+    })
+  }
 
   if (isLoading) {
     return (
@@ -515,7 +528,157 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         </div>
       </header>
 
-      <div className="flex">
+      {/* Mobile Layout */}
+      <div className="block lg:hidden">
+        {/* Full-width content area */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="p-6">
+            {selectedLesson ? (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)?.title}
+                  </h2>
+                  <p className="text-gray-600">
+                    {course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)?.details}
+                  </p>
+                </div>
+                
+                {/* Lesson Content */}
+                <div className="prose max-w-none">
+                  {renderLessonContent(currentLessonContent)}
+                </div>
+
+                {/* Complete Lesson Button */}
+                {(() => {
+                  const nextUnlockedLesson = getNextUnlockedLesson()
+                  const currentLesson = nextUnlockedLesson ? course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === nextUnlockedLesson) : null
+                  
+                  return nextUnlockedLesson && currentLesson && selectedLesson === nextUnlockedLesson ? (
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={() => handleMarkLessonCompleted(nextUnlockedLesson, true)}
+                        className="bg-green-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto w-full"
+                      >
+                        <CheckCircle size={24} />
+                        <span>Complete Lesson</span>
+                      </button>
+                    </div>
+                  ) : null
+                })()}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Play size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Lesson</h3>
+                <p className="text-gray-600">Choose a lesson from below to start learning.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Accordion sections */}
+        <div className="bg-gray-50">
+          <div className="p-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Content</h3>
+            
+            {course.sections.map((section: any, sectionIndex: number) => {
+              const isSectionUnlockedState = isSectionUnlocked(sectionIndex)
+              const isSectionCompletedState = isSectionCompleted(section)
+              const isExpanded = expandedSections.has(section.id)
+              const sectionProgress = section.lessons.filter((lesson: any) => isLessonCompleted(lesson.id)).length
+              const sectionTotal = section.lessons.length
+              
+              return (
+                <div key={section.id} className={`mb-4 ${!isSectionUnlockedState ? 'opacity-50' : ''}`}>
+                  <button
+                    onClick={() => toggleSection(section.id)}
+                    className={`w-full p-4 bg-white rounded-lg border border-gray-200 text-left transition-all duration-200 ${
+                      isExpanded ? 'shadow-md' : 'hover:shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        {isSectionCompletedState ? (
+                          <CheckCircle size={20} className="text-green-500" />
+                        ) : isSectionUnlockedState ? (
+                          <Play size={20} className="text-blue-500" />
+                        ) : (
+                          <Lock size={20} className="text-gray-400" />
+                        )}
+                        <div>
+                          <h4 className={`font-semibold ${isSectionUnlockedState ? 'text-gray-900' : 'text-gray-500'}`}>
+                            {section.title}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {sectionProgress} of {sectionTotal} lessons complete
+                          </p>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronDown size={20} className="text-gray-400" />
+                      ) : (
+                        <ChevronRight size={20} className="text-gray-400" />
+                      )}
+                    </div>
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="mt-2 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="p-4 space-y-2">
+                        {section.lessons.map((lesson: any) => {
+                          const isCompleted = isLessonCompleted(lesson.id)
+                          const isUnlocked = isLessonUnlocked(lesson.id)
+                          const isSelected = selectedLesson === lesson.id
+                          const canClick = isUnlocked || isCompleted
+                          
+                          return (
+                            <button
+                              key={lesson.id}
+                              onClick={() => canClick ? handleLessonClick(lesson.id) : null}
+                              disabled={!canClick}
+                              className={`w-full p-3 rounded-lg transition-colors text-left ${
+                                !canClick 
+                                  ? 'cursor-not-allowed bg-gray-100' 
+                                  : isSelected 
+                                    ? 'bg-primary-50 border border-primary-200' 
+                                    : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-3">
+                                {isCompleted ? (
+                                  <CheckCircle size={20} className="text-green-500" />
+                                ) : isUnlocked ? (
+                                  <Play size={20} className="text-blue-500" />
+                                ) : (
+                                  <Lock size={20} className="text-gray-400" />
+                                )}
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    {lesson.title}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {lesson.details}
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex">
         {/* Left Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 min-h-screen">
           <div className="p-6">
