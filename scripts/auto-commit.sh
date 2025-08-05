@@ -2,6 +2,7 @@
 
 # Auto-commit script for Cursor agents
 # This script will automatically commit and push changes to GitHub
+# Vercel will automatically deploy from GitHub
 
 # Get the current timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
@@ -24,7 +25,8 @@ if [[ -n $(git status --porcelain) ]]; then
     git push origin main
     
     echo "✅ Successfully committed and pushed changes!"
-    echo "🌐 Deployment will trigger automatically via GitHub Actions"
+    echo "🌐 Vercel will automatically deploy from GitHub"
+    echo "📱 Check deployment status at: https://vercel.com/dashboard"
 else
     echo "ℹ️ No changes to commit"
 fi 

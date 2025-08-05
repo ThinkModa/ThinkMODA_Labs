@@ -71,9 +71,7 @@ A modern course building platform built with Next.js 14, TypeScript, and Supabas
 
 ## Supabase Migration
 
-### From Prisma/SQLite to Supabase
-
-If you're migrating from the previous Prisma/SQLite setup:
+### Supabase Setup
 
 1. **Set up Supabase project**
    - Create a new project at [supabase.com](https://supabase.com)
@@ -175,13 +173,10 @@ The application uses Supabase client for all database operations, eliminating th
 │   ├── user/              # User interface pages
 │   └── globals.css        # Global styles
 ├── lib/                   # Utility libraries
-│   ├── services/          # Service layer
-│   ├── supabase.ts        # Supabase client
-│   └── prisma.ts          # Prisma client (legacy)
+│   └── services/          # Service layer
 ├── scripts/               # Utility scripts
-├── supabase/              # Supabase configuration
-│   └── migrations/        # Database migrations
-└── prisma/                # Prisma schema (legacy)
+└── supabase/              # Supabase configuration
+    └── migrations/        # Database migrations
 ```
 
 ## Contributing
