@@ -50,11 +50,19 @@ export default function CourseBuilderPage() {
     const loadCourses = async () => {
       try {
         console.log('Admin: Starting to load courses...')
+        console.log('Admin: courseService type:', typeof courseService)
+        console.log('Admin: courseService.getAllCourses type:', typeof courseService.getAllCourses)
+        
         const courses = await courseService.getAllCourses()
         console.log('Admin: Loaded courses from Supabase:', courses.length, courses)
         setCourses(courses)
       } catch (error) {
         console.error('Admin: Error loading courses:', error)
+        console.error('Admin: Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        })
         setCourses([])
       }
     }
