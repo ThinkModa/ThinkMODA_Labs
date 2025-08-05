@@ -225,80 +225,18 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     
     console.log('User side - Final processed content:', processedContent) // Debug log
     
-          const lines = processedContent.split('\n')
-      const elements: JSX.Element[] = []
+    const lines = processedContent.split('\n')
+    const elements: JSX.Element[] = []
+    
+    lines.forEach((line, index) => {
+      console.log('Processing line:', line) // Debug log
       
-      lines.forEach((line, index) => {
-        console.log('Processing line:', line) // Debug log
-        
-        // Handle different content types (including old formats for backward compatibility)
-        if (line.startsWith('/embed ')) {
-          const originalUrl = line.substring(7).trim()
-          console.log('Found /embed line, URL:', originalUrl) // Debug log
-          if (originalUrl) {
-            // Determine content type based on URL
-            let contentType = 'iframe'
-            let icon = Video
-            let label = 'Embedded Content'
-            let embedUrl = originalUrl
-            
-            if (originalUrl.includes('youtube.com') || originalUrl.includes('youtu.be')) {
-              contentType = 'video'
-              icon = Video
-              label = 'Video'
-              // Convert YouTube URL to embed format
-              const videoId = originalUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
-              if (videoId) {
-                embedUrl = `https://www.youtube.com/embed/${videoId}`
-              }
-            } else if (originalUrl.includes('vimeo.com')) {
-              contentType = 'video'
-              icon = Video
-              label = 'Video'
-              // Convert Vimeo URL to embed format
-              const videoId = originalUrl.match(/vimeo\.com\/(\d+)/)?.[1]
-              if (videoId) {
-                embedUrl = `https://player.vimeo.com/video/${videoId}`
-              }
-            } else if (originalUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-              contentType = 'image'
-              icon = Image
-              label = 'Image'
-            } else if (originalUrl.includes('typeform.com')) {
-              contentType = 'form'
-              icon = FormInput
-              label = 'Form'
-            }
-            
-            const Icon = icon
-            elements.push(
-              <div key={index} className="mb-6">
-                <div className="bg-gray-50 rounded-lg p-4 mb-2">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon size={16} className="text-purple-500" />
-                    <span className="text-sm font-medium text-gray-700">{label}</span>
-                  </div>
-                  {contentType === 'image' ? (
-                    <img src={embedUrl} alt="Lesson content" className="w-full rounded-lg" />
-                  ) : (
-                    <iframe 
-                      src={embedUrl} 
-                      className="w-full h-96 rounded-lg"
-                      frameBorder="0"
-                      allowFullScreen
-                      title="Embedded content"
-                    />
-                  )}
-                </div>
-              </div>
-            )
-          }
-        } else if (line.startsWith('/https://') || line.startsWith('/http://')) {
-          // Handle URLs that were saved with extra slash
-          const originalUrl = line.substring(1).trim()
-          console.log('Processing URL with extra slash:', originalUrl)
-          
-          // Convert to embed format
+      // Handle different content types (including old formats for backward compatibility)
+      if (line.startsWith('/embed ')) {
+        const originalUrl = line.substring(7).trim()
+        console.log('Found /embed line, URL:', originalUrl) // Debug log
+        if (originalUrl) {
+          // Determine content type based on URL
           let contentType = 'iframe'
           let icon = Video
           let label = 'Embedded Content'
@@ -330,6 +268,18 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             contentType = 'form'
             icon = FormInput
             label = 'Form'
+            
+            // Handle Typeform URLs with dynamic hidden fields
+            if (user && selectedLesson) {
+              // Extract form ID from URL
+              const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+              if (formIdMatch) {
+                const formId = formIdMatch[1]
+                // Generate dynamic Typeform URL with hidden fields
+                embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+                console.log('Generated Typeform URL with hidden fields:', embedUrl)
+              }
+            }
           }
           
           const Icon = icon
@@ -354,72 +304,99 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               </div>
             </div>
           )
-        } else if (line.startsWith('/text ')) {
-          // Handle old text format for backward compatibility
-          const text = line.substring(6).trim()
-          if (text) {
-            elements.push(
-              <div key={index} className="mb-4">
-                <p className="text-gray-700 leading-relaxed">{text}</p>
-              </div>
-            )
-          }
-        } else if (line.startsWith('/image ')) {
-          // Handle old image format for backward compatibility
-          const url = line.substring(7).trim()
-          if (url) {
-            elements.push(
-              <div key={index} className="mb-6">
-                <div className="bg-gray-50 rounded-lg p-4 mb-2">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Image size={16} className="text-green-500" />
-                    <span className="text-sm font-medium text-gray-700">Image</span>
-                  </div>
-                  <img src={url} alt="Lesson content" className="w-full rounded-lg" />
-                </div>
-              </div>
-            )
-          }
-        } else if (line.startsWith('/typeform ')) {
-          // Handle old typeform format for backward compatibility
-          const url = line.substring(10).trim()
-          if (url) {
-            elements.push(
-              <div key={index} className="mb-6">
-                <div className="bg-gray-50 rounded-lg p-4 mb-2">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <FormInput size={16} className="text-orange-500" />
-                    <span className="text-sm font-medium text-gray-700">Form</span>
-                  </div>
-                  <iframe 
-                    src={url} 
-                    className="w-full h-96 rounded-lg"
-                    frameBorder="0"
-                    title="Form content"
-                  />
-                </div>
-              </div>
-            )
-          }
-        } else if (line.trim()) {
-          // Handle regular text content with formatting
-          const formattedText = line
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-            .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
-            .replace(/^# (.*)/, '<h1 class="text-2xl font-bold text-gray-900 mb-3">$1</h1>') // H1
-            .replace(/^## (.*)/, '<h2 class="text-xl font-bold text-gray-900 mb-2">$1</h2>') // H2
-            .replace(/^### (.*)/, '<h3 class="text-lg font-bold text-gray-900 mb-2">$1</h3>') // H3
-          
-          elements.push(
-            <div key={index} className="mb-4">
-              <div 
-                className="text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: formattedText }}
-              />
-            </div>
-          )
         }
+      } else if (line.startsWith('/https://') || line.startsWith('/http://')) {
+        // Handle URLs that were saved with extra slash
+        const originalUrl = line.substring(1).trim()
+        console.log('Processing URL with extra slash:', originalUrl)
+        
+        // Convert to embed format
+        let contentType = 'iframe'
+        let icon = Video
+        let label = 'Embedded Content'
+        let embedUrl = originalUrl
+        
+        if (originalUrl.includes('youtube.com') || originalUrl.includes('youtu.be')) {
+          contentType = 'video'
+          icon = Video
+          label = 'Video'
+          // Convert YouTube URL to embed format
+          const videoId = originalUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
+          if (videoId) {
+            embedUrl = `https://www.youtube.com/embed/${videoId}`
+          }
+        } else if (originalUrl.includes('vimeo.com')) {
+          contentType = 'video'
+          icon = Video
+          label = 'Video'
+          // Convert Vimeo URL to embed format
+          const videoId = originalUrl.match(/vimeo\.com\/(\d+)/)?.[1]
+          if (videoId) {
+            embedUrl = `https://player.vimeo.com/video/${videoId}`
+          }
+        } else if (originalUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          contentType = 'image'
+          icon = Image
+          label = 'Image'
+        } else if (originalUrl.includes('typeform.com')) {
+          contentType = 'form'
+          icon = FormInput
+          label = 'Form'
+          
+          // Handle Typeform URLs with dynamic hidden fields
+          if (user && selectedLesson) {
+            // Extract form ID from URL
+            const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+            if (formIdMatch) {
+              const formId = formIdMatch[1]
+              // Generate dynamic Typeform URL with hidden fields
+              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+              console.log('Generated Typeform URL with hidden fields:', embedUrl)
+            }
+          }
+        }
+        
+        const Icon = icon
+        elements.push(
+          <div key={index} className="mb-6">
+            <div className="bg-gray-50 rounded-lg p-4 mb-2">
+              <div className="flex items-center space-x-2 mb-2">
+                <Icon size={16} className="text-purple-500" />
+                <span className="text-sm font-medium text-gray-700">{label}</span>
+              </div>
+              {contentType === 'image' ? (
+                <img src={embedUrl} alt="Lesson content" className="w-full rounded-lg" />
+                ) : (
+                <iframe 
+                  src={embedUrl} 
+                  className="w-full h-96 rounded-lg"
+                  frameBorder="0"
+                  allowFullScreen
+                  title="Embedded content"
+                />
+              )}
+            </div>
+          </div>
+        )
+      } else if (line.trim()) {
+        // Handle regular text content with formatting
+        const formattedText = line
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+          .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+          .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
+          .replace(/^# (.*)/, '<h1 class="text-2xl font-bold text-gray-900 mb-3">$1</h1>') // H1
+          .replace(/^## (.*)/, '<h2 class="text-xl font-bold text-gray-900 mb-2">$1</h2>') // H2
+          .replace(/^### (.*)/, '<h3 class="text-lg font-bold text-gray-900 mb-2">$1</h3>') // H3
+        
+        elements.push(
+          <div key={index} className="mb-4">
+            <div 
+              className="text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: formattedText }}
+            />
+          </div>
+        )
+      }
     })
     
     console.log('Generated elements:', elements.length) // Debug log
