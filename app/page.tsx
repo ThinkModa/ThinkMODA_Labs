@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, User, Shield } from 'lucide-react'
 import { authService } from '@/lib/services/auth-supabase'
 
+// Updated with latest environment variables
 export default function SignInPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
