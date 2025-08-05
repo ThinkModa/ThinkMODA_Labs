@@ -17,11 +17,11 @@ import {
   FormInput,
   ChevronDown
 } from 'lucide-react'
-import { courseService, Course, Section, Lesson } from '@/lib/services/courses-supabase'
+import { courseService, CourseWithSections, Section, Lesson } from '@/lib/services/courses-supabase'
 
 export default function CourseBuilderPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [courses, setCourses] = useState<CourseWithSections[]>([])
+  const [selectedCourse, setSelectedCourse] = useState<CourseWithSections | null>(null)
   const [isCreatingCourse, setIsCreatingCourse] = useState(false)
   const [isCreatingSection, setIsCreatingSection] = useState(false)
   const [isCreatingLesson, setIsCreatingLesson] = useState(false)
