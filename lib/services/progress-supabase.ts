@@ -11,10 +11,15 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Debug: Check if admin client is available
+console.log('Progress service - Admin client available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+console.log('Progress service - Admin client URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+
 export const progressService = {
   // Get user progress
   async getUserProgress(userId: string): Promise<UserProgress[]> {
     try {
+      console.log('Progress service - Getting user progress for:', userId)
       const { data: progress, error } = await supabaseAdmin
         .from('user_progress')
         .select('*')
@@ -25,6 +30,7 @@ export const progressService = {
         throw new Error('Failed to fetch user progress')
       }
 
+      console.log('Progress service - Found progress:', progress?.length || 0)
       return progress || []
     } catch (error) {
       console.error('Error in getUserProgress:', error)
@@ -35,6 +41,8 @@ export const progressService = {
   // Mark lesson as completed
   async markLessonCompleted(userId: string, lessonId: string, completed: boolean): Promise<UserProgress> {
     try {
+      console.log('Progress service - Marking lesson completed:', { userId, lessonId, completed })
+      
       if (completed) {
         // Insert or update progress using admin client
         const { data: progress, error } = await supabaseAdmin
@@ -53,6 +61,7 @@ export const progressService = {
           throw new Error('Failed to mark lesson completed')
         }
 
+        console.log('Progress service - Lesson marked as completed successfully')
         return progress
       } else {
         // Delete progress record using admin client
@@ -67,6 +76,7 @@ export const progressService = {
           throw new Error('Failed to mark lesson incomplete')
         }
 
+        console.log('Progress service - Lesson marked as incomplete successfully')
         // Return a mock progress object for consistency
         return {
           id: '',
