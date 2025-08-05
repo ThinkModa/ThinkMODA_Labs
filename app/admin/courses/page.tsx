@@ -192,9 +192,10 @@ export default function CourseBuilderPage() {
     
     try {
       console.log('Creating section for course:', selectedCourse.id)
-      const section = await courseService.createSection(selectedCourse.id, {
+      const section = await courseService.createSection({
         title: newSection.title,
-        description: newSection.description
+        description: newSection.description,
+        courseId: selectedCourse.id
       })
       
       console.log('Section created successfully:', section)
@@ -239,10 +240,11 @@ export default function CourseBuilderPage() {
     if (newLesson.title && selectedCourse && selectedCourse.sections.length > 0) {
       try {
         const firstSection = selectedCourse.sections[0]
-        const lesson = await courseService.createLesson(firstSection.id, {
+        const lesson = await courseService.createLesson({
           title: newLesson.title,
           content: content, // Use content state directly
-          details: newLesson.details
+          details: newLesson.details,
+          sectionId: firstSection.id
         })
         
         console.log('Saving lesson via API:', lesson.title)
