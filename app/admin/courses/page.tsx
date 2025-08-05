@@ -45,6 +45,29 @@ export default function CourseBuilderPage() {
   const [selectedText, setSelectedText] = useState({ start: 0, end: 0 })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Add network request interceptor
+  useEffect(() => {
+    console.log('Admin: Setting up network interceptor...')
+    
+    // Intercept fetch requests to track 404s
+    const originalFetch = window.fetch
+    window.fetch = function(...args) {
+      const url = args[0] as string
+      console.log('Admin: Fetch request to:', url)
+      
+      return originalFetch.apply(this, args).then(response => {
+        if (!response.ok) {
+          console.error('Admin: Fetch failed:', url, response.status, response.statusText)
+        }
+        return response
+      })
+    }
+    
+    return () => {
+      window.fetch = originalFetch
+    }
+  }, [])
+
   // Load existing courses from API on component mount
   useEffect(() => {
     const loadCourses = async () => {
@@ -53,9 +76,10 @@ export default function CourseBuilderPage() {
         console.log('Admin: courseService type:', typeof courseService)
         console.log('Admin: courseService.getAllCourses type:', typeof courseService.getAllCourses)
         console.log('Admin: Current user from localStorage:', localStorage.getItem('user'))
+        console.log('Admin: About to call courseService.getAllCourses()...')
         
         const courses = await courseService.getAllCourses()
-        console.log('Admin: Loaded courses from Supabase:', courses.length, courses)
+        console.log('Admin: Successfully loaded courses from Supabase:', courses.length, courses)
         
         if (courses && courses.length > 0) {
           courses.forEach((course, index) => {
@@ -71,7 +95,8 @@ export default function CourseBuilderPage() {
         }
         
         setCourses(courses)
-      } catch (error) {
+        console.log('Admin: Courses set in state:', courses.length)
+      } catch (error: any) {
         console.error('Admin: Error loading courses:', error)
         console.error('Admin: Error details:', {
           message: error.message,
@@ -82,6 +107,7 @@ export default function CourseBuilderPage() {
       }
     }
     
+    console.log('Admin: useEffect triggered, calling loadCourses...')
     loadCourses()
   }, [])
 
