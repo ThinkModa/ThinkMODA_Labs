@@ -476,17 +476,44 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         }
       })
 
-      // If lesson was completed, automatically select the next unlocked lesson
+      // If lesson was completed, automatically select the next lesson in the same section
       if (completed) {
-        const nextUnlockedLesson = getNextUnlockedLesson()
-        if (nextUnlockedLesson && nextUnlockedLesson !== lessonId) {
-          // Find the lesson content for the next unlocked lesson
-          for (const section of course.sections) {
-            const lesson = section.lessons.find((l: any) => l.id === nextUnlockedLesson)
-            if (lesson) {
-              setSelectedLesson(nextUnlockedLesson)
-              setCurrentLessonContent(lesson.content)
-              break
+        // Find the current section and lesson index
+        let currentSectionIndex = -1
+        let currentLessonIndex = -1
+        
+        for (let i = 0; i < course.sections.length; i++) {
+          const section = course.sections[i]
+          const lessonIndex = section.lessons.findIndex((l: any) => l.id === lessonId)
+          if (lessonIndex !== -1) {
+            currentSectionIndex = i
+            currentLessonIndex = lessonIndex
+            break
+          }
+        }
+        
+        // Find the next lesson in the same section
+        if (currentSectionIndex !== -1 && currentLessonIndex !== -1) {
+          const currentSection = course.sections[currentSectionIndex]
+          const nextLessonIndex = currentLessonIndex + 1
+          
+          if (nextLessonIndex < currentSection.lessons.length) {
+            // Next lesson in same section
+            const nextLesson = currentSection.lessons[nextLessonIndex]
+            setSelectedLesson(nextLesson.id)
+            setCurrentLessonContent(nextLesson.content)
+            console.log('Auto-advancing to next lesson in section:', nextLesson.title)
+          } else {
+            // End of section, find next section with lessons
+            for (let i = currentSectionIndex + 1; i < course.sections.length; i++) {
+              const nextSection = course.sections[i]
+              if (nextSection.lessons.length > 0) {
+                const firstLesson = nextSection.lessons[0]
+                setSelectedLesson(firstLesson.id)
+                setCurrentLessonContent(firstLesson.content)
+                console.log('Auto-advancing to first lesson of next section:', firstLesson.title)
+                break
+              }
             }
           }
         }
@@ -551,13 +578,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
                 {/* Complete Lesson Button */}
                 {(() => {
-                  const nextUnlockedLesson = getNextUnlockedLesson()
-                  const currentLesson = nextUnlockedLesson ? course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === nextUnlockedLesson) : null
+                  const currentLesson = course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)
+                  const isCurrentLessonCompleted = currentLesson ? isLessonCompleted(currentLesson.id) : false
                   
-                  return nextUnlockedLesson && currentLesson && selectedLesson === nextUnlockedLesson ? (
+                  return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
                     <div className="mt-8 text-center">
                       <button
-                        onClick={() => handleMarkLessonCompleted(nextUnlockedLesson, true)}
+                        onClick={() => handleMarkLessonCompleted(selectedLesson, true)}
                         className="bg-green-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto w-full"
                       >
                         <CheckCircle size={24} />
@@ -801,13 +828,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
                     {/* Complete Lesson Button */}
                     {(() => {
-                      const nextUnlockedLesson = getNextUnlockedLesson()
-                      const currentLesson = nextUnlockedLesson ? course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === nextUnlockedLesson) : null
+                      const currentLesson = course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)
+                      const isCurrentLessonCompleted = currentLesson ? isLessonCompleted(currentLesson.id) : false
                       
-                      return nextUnlockedLesson && currentLesson && selectedLesson === nextUnlockedLesson ? (
+                      return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
                         <div className="mt-8 text-center">
                           <button
-                            onClick={() => handleMarkLessonCompleted(nextUnlockedLesson, true)}
+                            onClick={() => handleMarkLessonCompleted(selectedLesson, true)}
                             className="bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
                           >
                             <CheckCircle size={20} />
