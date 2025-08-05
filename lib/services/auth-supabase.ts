@@ -10,6 +10,10 @@ export interface AuthUser {
   role: 'ADMIN' | 'BASIC'
 }
 
+// Debug: Check if service role key is available
+console.log('Service role key available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+console.log('Service role key length:', process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0)
+
 // Create a service role client for admin operations
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
