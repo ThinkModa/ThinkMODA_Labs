@@ -1,8 +1,11 @@
 -- Fix RLS policies to allow user registration and authentication
 -- Run this in your Supabase SQL editor
 
+-- Temporarily disable RLS on user_progress table to fix 401 errors
+ALTER TABLE user_progress DISABLE ROW LEVEL SECURITY;
+
 -- Enable RLS on user_progress table if not already enabled
-ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing restrictive policies
 DROP POLICY IF EXISTS "Users can view own profile" ON users;
@@ -45,5 +48,5 @@ DROP POLICY IF EXISTS "Users can delete own progress" ON user_progress;
 DROP POLICY IF EXISTS "Enable all operations for user_progress" ON user_progress;
 
 -- Enable all operations on user_progress for now (since we're not using Supabase Auth)
-CREATE POLICY "Enable all operations for user_progress" ON user_progress
-  FOR ALL USING (true); 
+-- CREATE POLICY "Enable all operations for user_progress" ON user_progress
+--   FOR ALL USING (true); 
