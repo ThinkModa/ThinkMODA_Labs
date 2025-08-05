@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock } from 'lucide-react'
-import { courseService, Course } from '@/lib/services/courses'
-import { progressService, UserProgress } from '@/lib/services/progress'
+import { courseService, Course } from '@/lib/services/courses-supabase'
+import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 
 export default function CourseLessonsPage({ params }: { params: { id: string } }) {
   const [searchQuery, setSearchQuery] = useState('')
