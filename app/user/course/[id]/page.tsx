@@ -5,6 +5,9 @@ import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, Form
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 
+// Debug: Verify this is the updated version
+console.log('Course page - Using updated Supabase services')
+
 export default function CourseLessonsPage({ params }: { params: { id: string } }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
