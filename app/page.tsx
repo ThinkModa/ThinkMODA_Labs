@@ -78,10 +78,10 @@ export default function SignInPage() {
     // Small delay to ensure localStorage is set before redirect
     setTimeout(() => {
       // Redirect based on user role
-      if (result.user.role === 'ADMIN') {
+      if (result.user && result.user.role === 'ADMIN') {
         console.log('Redirecting to admin dashboard...')
         window.location.href = '/admin'
-      } else {
+      } else if (result.user) {
         console.log('Redirecting to user dashboard...')
         window.location.href = '/user'
       }

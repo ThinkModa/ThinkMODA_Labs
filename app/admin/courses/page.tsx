@@ -149,7 +149,7 @@ export default function CourseBuilderPage() {
   const handleCreateLesson = () => {
     setIsCreatingLesson(true)
     setContent('')
-    setNewLesson({ title: '', content: '', duration: '' })
+    setNewLesson({ title: '', content: '', details: '' })
     
     // Reset embed states
     setShowEmbedInput(false)
@@ -308,19 +308,21 @@ export default function CourseBuilderPage() {
         }
         
         // Update local state
-        const updatedSections = selectedCourse.sections.filter(section => section.id !== sectionId)
-        const updatedCourse = {
-          ...selectedCourse,
-          sections: updatedSections
+        if (selectedCourse) {
+          const updatedSections = selectedCourse.sections.filter(section => section.id !== sectionId)
+          const updatedCourse = {
+            ...selectedCourse,
+            sections: updatedSections
+          }
+          
+          setSelectedCourse(updatedCourse)
+          setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+          
+          // Trigger real-time update
+          window.dispatchEvent(new CustomEvent('coursesUpdated', { 
+            detail: { courseId: selectedCourse.id } 
+          }))
         }
-        
-        setSelectedCourse(updatedCourse)
-        setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
-        
-        // Trigger real-time update
-        window.dispatchEvent(new CustomEvent('coursesUpdated', { 
-          detail: { courseId: selectedCourse.id } 
-        }))
         
         console.log('Section deleted successfully')
       } catch (error) {

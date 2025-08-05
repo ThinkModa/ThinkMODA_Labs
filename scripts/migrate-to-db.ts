@@ -51,7 +51,7 @@ async function migrateFromLocalStorage() {
             data: {
               title: lessonData.title,
               content: lessonData.content || '',
-              duration: lessonData.duration || '',
+              details: lessonData.details || '',
               sectionId: section.id,
             }
           })

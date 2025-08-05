@@ -19,6 +19,7 @@ interface Course {
   id: string
   title: string
   description: string
+  visibility: 'OPEN' | 'PRIVATE'
   sections: Section[]
 }
 

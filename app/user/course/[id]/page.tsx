@@ -131,7 +131,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   }
 
   const totalLessons = course.sections.reduce((acc: number, section: any) => acc + section.lessons.length, 0)
-  const completedCount = userProgress.filter(p => p.completed && course.sections.some(s => s.lessons.some(l => l.id === p.lessonId))).length
+  const completedCount = userProgress.filter(p => p.completed && course.sections.some((s: any) => s.lessons.some((l: any) => l.id === p.lessonId))).length
   const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0
 
   // Helper functions for progression system
