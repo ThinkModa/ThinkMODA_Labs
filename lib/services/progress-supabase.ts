@@ -83,6 +83,48 @@ export const progressService = {
     }
   },
 
+  // Check if lesson has embedded typeform
+  hasEmbeddedTypeform(lessonContent: string): boolean {
+    return lessonContent.includes('typeform.com') || lessonContent.includes('/typeform ')
+  },
+
+  // Check if typeform is completed for a lesson
+  async isTypeformCompleted(userId: string, lessonId: string): Promise<boolean> {
+    try {
+      const { data: progress, error } = await supabase
+        .from('user_progress')
+        .select('typeform_submitted')
+        .eq('user_id', userId)
+        .eq('lesson_id', lessonId)
+        .eq('typeform_submitted', true)
+        .single()
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error checking typeform completion:', error)
+        return false
+      }
+
+      return !!progress?.typeform_submitted
+    } catch (error) {
+      console.error('Error in isTypeformCompleted:', error)
+      return false
+    }
+  },
+
+  // Check if lesson can be completed (considering typeform requirements)
+  async canCompleteLesson(userId: string, lessonId: string, lessonContent: string): Promise<boolean> {
+    // Check if lesson has embedded typeform
+    const hasTypeform = this.hasEmbeddedTypeform(lessonContent)
+    
+    if (hasTypeform) {
+      // If lesson has typeform, check if it's completed
+      return await this.isTypeformCompleted(userId, lessonId)
+    }
+    
+    // Regular lessons can always be completed
+    return true
+  },
+
   // Calculate course progress percentage
   calculateCourseProgress(course: any, userProgress: UserProgress[]): number {
     if (!course || !course.sections) return 0

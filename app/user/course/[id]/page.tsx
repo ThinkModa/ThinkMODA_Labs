@@ -584,7 +584,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
                     <div className="mt-8 text-center">
                       <button
-                        onClick={() => handleMarkLessonCompleted(selectedLesson, true)}
+                        onClick={async () => {
+                          // Check if lesson can be completed (considering typeform requirements)
+                          const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
+                          
+                          if (canComplete) {
+                            handleMarkLessonCompleted(selectedLesson, true)
+                          } else {
+                            // Show message that typeform needs to be completed
+                            alert('Please complete the embedded form before marking this lesson as complete.')
+                          }
+                        }}
                         className="bg-green-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto w-full"
                       >
                         <CheckCircle size={24} />
@@ -834,7 +844,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                       return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
                         <div className="mt-8 text-center">
                           <button
-                            onClick={() => handleMarkLessonCompleted(selectedLesson, true)}
+                            onClick={async () => {
+                              // Check if lesson can be completed (considering typeform requirements)
+                              const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
+                              
+                              if (canComplete) {
+                                handleMarkLessonCompleted(selectedLesson, true)
+                              } else {
+                                // Show message that typeform needs to be completed
+                                alert('Please complete the embedded form before marking this lesson as complete.')
+                              }
+                            }}
                             className="bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
                           >
                             <CheckCircle size={20} />

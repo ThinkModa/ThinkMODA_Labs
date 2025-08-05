@@ -15,7 +15,9 @@ export default function SignInPage() {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    companyName: '',
+    phoneNumber: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +42,8 @@ export default function SignInPage() {
           last_name: formData.lastName,
           email: formData.email,
           password: formData.password,
+          company_name: formData.companyName,
+          phone_number: formData.phoneNumber,
         })
 
         if (!result.success) {
@@ -149,6 +153,38 @@ export default function SignInPage() {
                   onChange={handleInputChange}
                   className="input-field"
                   placeholder="Enter your last name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  id="companyName"
+                  name="companyName"
+                  type="text"
+                  required={isSignUp}
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="Enter your company name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  required={isSignUp}
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="Enter your phone number"
                 />
               </div>
             </>

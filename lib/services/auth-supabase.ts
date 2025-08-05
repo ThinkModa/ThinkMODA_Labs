@@ -6,6 +6,8 @@ export interface AuthUser {
   first_name: string
   last_name: string
   email: string
+  company_name?: string
+  phone_number?: string
   role: 'ADMIN' | 'BASIC'
 }
 
@@ -16,6 +18,8 @@ export const authService = {
     last_name: string
     email: string
     password: string
+    company_name?: string
+    phone_number?: string
   }): Promise<{ success: boolean; user?: AuthUser; error?: string }> {
     try {
       // Check if user already exists
@@ -40,6 +44,8 @@ export const authService = {
           last_name: userData.last_name,
           email: userData.email,
           password: hashedPassword,
+          company_name: userData.company_name || null,
+          phone_number: userData.phone_number || null,
           role: 'BASIC'
         })
         .select()
@@ -57,6 +63,8 @@ export const authService = {
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
+          company_name: user.company_name,
+          phone_number: user.phone_number,
           role: user.role
         }
       }
@@ -93,6 +101,8 @@ export const authService = {
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
+          company_name: user.company_name,
+          phone_number: user.phone_number,
           role: user.role
         }
       }
