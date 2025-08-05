@@ -52,9 +52,24 @@ export default function CourseBuilderPage() {
         console.log('Admin: Starting to load courses...')
         console.log('Admin: courseService type:', typeof courseService)
         console.log('Admin: courseService.getAllCourses type:', typeof courseService.getAllCourses)
+        console.log('Admin: Current user from localStorage:', localStorage.getItem('user'))
         
         const courses = await courseService.getAllCourses()
         console.log('Admin: Loaded courses from Supabase:', courses.length, courses)
+        
+        if (courses && courses.length > 0) {
+          courses.forEach((course, index) => {
+            console.log(`Admin: Course ${index + 1}:`, {
+              id: course.id,
+              title: course.title,
+              visibility: course.visibility,
+              sectionsCount: course.sections?.length || 0
+            })
+          })
+        } else {
+          console.log('Admin: No courses found in database')
+        }
+        
         setCourses(courses)
       } catch (error) {
         console.error('Admin: Error loading courses:', error)
