@@ -49,11 +49,12 @@ export default function CourseBuilderPage() {
   useEffect(() => {
     const loadCourses = async () => {
       try {
+        console.log('Admin: Starting to load courses...')
         const courses = await courseService.getAllCourses()
-        console.log('Loading courses from API:', courses.length)
+        console.log('Admin: Loaded courses from Supabase:', courses.length, courses)
         setCourses(courses)
       } catch (error) {
-        console.error('Error loading courses:', error)
+        console.error('Admin: Error loading courses:', error)
         setCourses([])
       }
     }
@@ -298,14 +299,8 @@ export default function CourseBuilderPage() {
   const handleDeleteSection = async (sectionId: string) => {
     if (confirm('Are you sure you want to delete this section? This will also delete all lessons within it.')) {
       try {
-        // Delete the section via API
-        const response = await fetch(`/api/sections/${sectionId}`, {
-          method: 'DELETE',
-        })
-        
-        if (!response.ok) {
-          throw new Error('Failed to delete section')
-        }
+        // Delete the section via Supabase service
+        await courseService.deleteSection(sectionId)
         
         // Update local state
         if (selectedCourse) {

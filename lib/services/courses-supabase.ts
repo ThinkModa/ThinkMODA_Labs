@@ -14,6 +14,8 @@ export const courseService = {
   // Get all courses
   async getAllCourses(): Promise<CourseWithSections[]> {
     try {
+      console.log('courses-supabase: Starting getAllCourses...')
+      
       const { data: courses, error } = await supabase
         .from('courses')
         .select(`
@@ -25,14 +27,28 @@ export const courseService = {
         `)
         .order('created_at', { ascending: false })
 
+      console.log('courses-supabase: Raw response:', { data: courses, error })
+
       if (error) {
-        console.error('Error fetching courses:', error)
+        console.error('courses-supabase: Error fetching courses:', error)
         throw new Error('Failed to fetch courses')
+      }
+
+      console.log('courses-supabase: Courses fetched successfully:', courses?.length || 0)
+      if (courses && courses.length > 0) {
+        courses.forEach((course, index) => {
+          console.log(`courses-supabase: Course ${index + 1}:`, {
+            id: course.id,
+            title: course.title,
+            visibility: course.visibility,
+            sectionsCount: course.sections?.length || 0
+          })
+        })
       }
 
       return courses || []
     } catch (error) {
-      console.error('Error in getAllCourses:', error)
+      console.error('courses-supabase: Error in getAllCourses:', error)
       throw error
     }
   },
