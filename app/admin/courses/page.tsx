@@ -205,9 +205,15 @@ export default function CourseBuilderPage() {
       
       console.log('Section created successfully:', section)
       
+      // Add lessons array to the new section
+      const sectionWithLessons = {
+        ...section,
+        lessons: []
+      }
+      
       const updatedCourse = {
         ...selectedCourse,
-        sections: [...selectedCourse.sections, section]
+        sections: [...selectedCourse.sections, sectionWithLessons]
       }
       setSelectedCourse(updatedCourse)
       setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
@@ -256,11 +262,20 @@ export default function CourseBuilderPage() {
         console.log('Lesson content:', lesson.content)
         
         // Add lesson to the first section
+        // Ensure all sections have lessons array
         const updatedSections = selectedCourse.sections.map((section, index) => {
-          if (index === 0) {
-            return { ...section, lessons: [...section.lessons, lesson] }
+          const sectionWithLessons = {
+            ...section,
+            lessons: section.lessons || []
           }
-          return section
+          
+          if (index === 0) {
+            return { 
+              ...sectionWithLessons, 
+              lessons: [...sectionWithLessons.lessons, lesson] 
+            }
+          }
+          return sectionWithLessons
         })
         
         const updatedCourse = {
