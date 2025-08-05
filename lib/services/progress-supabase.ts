@@ -1,26 +1,15 @@
 import { supabase } from '@/lib/supabase'
-import { createClient } from '@supabase/supabase-js'
 import type { UserProgress } from '@/lib/supabase'
 
 // Re-export types for compatibility
 export type { UserProgress }
-
-// Create a service role client for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-// Debug: Check if admin client is available
-console.log('Progress service - Admin client available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
-console.log('Progress service - Admin client URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
 
 export const progressService = {
   // Get user progress
   async getUserProgress(userId: string): Promise<UserProgress[]> {
     try {
       console.log('Progress service - Getting user progress for:', userId)
-      const { data: progress, error } = await supabaseAdmin
+      const { data: progress, error } = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', userId)
@@ -44,8 +33,8 @@ export const progressService = {
       console.log('Progress service - Marking lesson completed:', { userId, lessonId, completed })
       
       if (completed) {
-        // Insert or update progress using admin client
-        const { data: progress, error } = await supabaseAdmin
+        // Insert or update progress using regular client
+        const { data: progress, error } = await supabase
           .from('user_progress')
           .upsert({
             user_id: userId,
@@ -64,8 +53,8 @@ export const progressService = {
         console.log('Progress service - Lesson marked as completed successfully')
         return progress
       } else {
-        // Delete progress record using admin client
-        const { error } = await supabaseAdmin
+        // Delete progress record using regular client
+        const { error } = await supabase
           .from('user_progress')
           .delete()
           .eq('user_id', userId)
@@ -111,7 +100,7 @@ export const progressService = {
   // Get all progress data (for admin dashboard)
   async getAllProgress(): Promise<UserProgress[]> {
     try {
-      const { data: progress, error } = await supabaseAdmin
+      const { data: progress, error } = await supabase
         .from('user_progress')
         .select('*')
 

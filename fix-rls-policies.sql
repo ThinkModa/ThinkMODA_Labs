@@ -37,34 +37,13 @@ CREATE POLICY "Admins can manage all courses" ON courses
     )
   );
 
--- Add RLS policies for user_progress table
+-- Add RLS policies for user_progress table - allow all operations for now
 DROP POLICY IF EXISTS "Users can view own progress" ON user_progress;
 DROP POLICY IF EXISTS "Users can insert own progress" ON user_progress;
 DROP POLICY IF EXISTS "Users can update own progress" ON user_progress;
 DROP POLICY IF EXISTS "Users can delete own progress" ON user_progress;
+DROP POLICY IF EXISTS "Enable all operations for user_progress" ON user_progress;
 
--- Enable users to view their own progress
-CREATE POLICY "Users can view own progress" ON user_progress
-  FOR SELECT USING (user_id = auth.uid()::text);
-
--- Enable users to insert their own progress
-CREATE POLICY "Users can insert own progress" ON user_progress
-  FOR INSERT WITH CHECK (user_id = auth.uid()::text);
-
--- Enable users to update their own progress
-CREATE POLICY "Users can update own progress" ON user_progress
-  FOR UPDATE USING (user_id = auth.uid()::text);
-
--- Enable users to delete their own progress
-CREATE POLICY "Users can delete own progress" ON user_progress
-  FOR DELETE USING (user_id = auth.uid()::text);
-
--- Enable admins to manage all progress
-CREATE POLICY "Admins can manage all progress" ON user_progress
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM users 
-      WHERE users.id = auth.uid()::text 
-      AND users.role = 'ADMIN'
-    )
-  ); 
+-- Enable all operations on user_progress for now (since we're not using Supabase Auth)
+CREATE POLICY "Enable all operations for user_progress" ON user_progress
+  FOR ALL USING (true); 
