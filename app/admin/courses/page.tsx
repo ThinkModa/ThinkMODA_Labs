@@ -78,6 +78,26 @@ export default function CourseBuilderPage() {
         console.log('Admin: Current user from localStorage:', localStorage.getItem('user'))
         console.log('Admin: About to call courseService.getAllCourses()...')
         
+        // Test direct Supabase call first
+        console.log('Admin: Testing direct Supabase call...')
+        const { supabase } = await import('@/lib/supabase')
+        console.log('Admin: Supabase client loaded:', !!supabase)
+        
+        // Try a simple query first
+        const { data: testData, error: testError } = await supabase
+          .from('courses')
+          .select('id, title')
+          .limit(1)
+        
+        console.log('Admin: Test query result:', { data: testData, error: testError })
+        
+        if (testError) {
+          console.error('Admin: Test query failed:', testError)
+          throw new Error(`Test query failed: ${testError.message}`)
+        }
+        
+        console.log('Admin: Test query successful, now calling courseService.getAllCourses()...')
+        
         const courses = await courseService.getAllCourses()
         console.log('Admin: Successfully loaded courses from Supabase:', courses.length, courses)
         
