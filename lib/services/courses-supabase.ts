@@ -15,8 +15,9 @@ export const courseService = {
   async getAllCourses(): Promise<CourseWithSections[]> {
     try {
       console.log('courses-supabase: Starting getAllCourses...')
+      console.log('courses-supabase: Supabase client:', !!supabase)
       
-      const { data: courses, error } = await supabase
+      const query = supabase
         .from('courses')
         .select(`
           *,
@@ -27,7 +28,9 @@ export const courseService = {
         `)
         .order('created_at', { ascending: false })
 
-      console.log('courses-supabase: Raw response:', { data: courses, error })
+      console.log('courses-supabase: About to execute query...')
+      const { data: courses, error } = await query
+      console.log('courses-supabase: Query executed, response:', { data: courses, error })
 
       if (error) {
         console.error('courses-supabase: Error fetching courses:', error)
