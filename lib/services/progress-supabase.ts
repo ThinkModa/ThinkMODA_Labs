@@ -83,9 +83,37 @@ export const progressService = {
     }
   },
 
+  // Generate Typeform URL with hidden fields
+  generateTypeformUrl(formId: string, userData: any, lessonId: string, courseId: string): string {
+    const baseUrl = `https://form.typeform.com/to/${formId}`
+    const params = new URLSearchParams({
+      user_id: userData.id,
+      lesson_id: lessonId,
+      course_id: courseId,
+      first_name: userData.first_name || '',
+      last_name: userData.last_name || '',
+      email: userData.email || '',
+      company_name: userData.company_name || '',
+      phone_number: userData.phone_number || ''
+    })
+    
+    return `${baseUrl}#${params.toString()}`
+  },
+
   // Check if lesson has embedded typeform
   hasEmbeddedTypeform(lessonContent: string): boolean {
-    return lessonContent.includes('typeform.com') || lessonContent.includes('/typeform ')
+    // Check for specific Typeform URLs
+    const typeformUrls = [
+      'form.typeform.com/to/pZp1eiDj', // The Visionary
+      'form.typeform.com/to/ZIevyTG8', // The Mission
+      'form.typeform.com/to/xHocdpeq', // The Plan
+      'form.typeform.com/to/TgYsSfUX', // The Baseline
+      'form.typeform.com/to/NjzuCVgZ'  // The Assessment
+    ]
+    
+    return typeformUrls.some(url => lessonContent.includes(url)) || 
+           lessonContent.includes('typeform.com') || 
+           lessonContent.includes('/typeform ')
   },
 
   // Check if typeform is completed for a lesson
