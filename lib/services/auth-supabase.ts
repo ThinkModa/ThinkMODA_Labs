@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
 
 export interface AuthUser {
@@ -9,6 +10,12 @@ export interface AuthUser {
   role: 'ADMIN' | 'BASIC'
 }
 
+// Create a service role client for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export const authService = {
   // Sign up a new user
   async signUp(userData: {
@@ -18,8 +25,8 @@ export const authService = {
     password: string
   }): Promise<{ success: boolean; user?: AuthUser; error?: string }> {
     try {
-      // Check if user already exists
-      const { data: existingUser } = await supabase
+      // Check if user already exists using admin client
+      const { data: existingUser } = await supabaseAdmin
         .from('users')
         .select('id')
         .eq('email', userData.email)
@@ -32,8 +39,8 @@ export const authService = {
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password, 10)
 
-      // Create user
-      const { data: user, error } = await supabase
+      // Create user using admin client to bypass RLS
+      const { data: user, error } = await supabaseAdmin
         .from('users')
         .insert({
           first_name: userData.first_name,
@@ -69,8 +76,8 @@ export const authService = {
   // Sign in user
   async signIn(credentials: { email: string; password: string }): Promise<{ success: boolean; user?: AuthUser; error?: string }> {
     try {
-      // Get user by email
-      const { data: user, error } = await supabase
+      // Get user by email using admin client
+      const { data: user, error } = await supabaseAdmin
         .from('users')
         .select('*')
         .eq('email', credentials.email)
