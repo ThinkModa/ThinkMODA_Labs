@@ -13,7 +13,12 @@ const TYPEFORM_FORMS = {
   'ZIevyTG8': 'The Mission', 
   'xHocdpeq': 'The Plan',
   'TgYsSfUX': 'The Baseline',
-  'NjzuCVgZ': 'The Assessment'
+  'NjzuCVgZ': 'The Assessment',
+  // Add your real TypeForm IDs here:
+  // 'YOUR_FORM_ID_1': 'Your Lesson Title 1',
+  // 'YOUR_FORM_ID_2': 'Your Lesson Title 2',
+  // 'YOUR_FORM_ID_3': 'Your Lesson Title 3',
+  // etc.
 }
 
 export async function POST(request: NextRequest) {

@@ -145,7 +145,12 @@ export const progressService = {
       'form.typeform.com/to/ZIevyTG8', // The Mission
       'form.typeform.com/to/xHocdpeq', // The Plan
       'form.typeform.com/to/TgYsSfUX', // The Baseline
-      'form.typeform.com/to/NjzuCVgZ'  // The Assessment
+      'form.typeform.com/to/NjzuCVgZ', // The Assessment
+      // Add your real TypeForm URLs here:
+      // 'form.typeform.com/to/YOUR_FORM_ID_1', // Your Lesson Title 1
+      // 'form.typeform.com/to/YOUR_FORM_ID_2', // Your Lesson Title 2
+      // 'form.typeform.com/to/YOUR_FORM_ID_3', // Your Lesson Title 3
+      // etc.
     ]
     
     return typeformUrls.some(url => lessonContent.includes(url)) || 

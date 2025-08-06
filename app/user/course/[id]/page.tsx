@@ -397,6 +397,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           .replace(/^# (.*)/, '<h1 class="text-2xl font-bold text-gray-900 mb-3">$1</h1>') // H1
           .replace(/^## (.*)/, '<h2 class="text-xl font-bold text-gray-900 mb-2">$1</h2>') // H2
           .replace(/^### (.*)/, '<h3 class="text-lg font-bold text-gray-900 mb-2">$1</h3>') // H3
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>') // Hyperlinks [text](url)
         
         elements.push(
           <div key={index} className="mb-4">

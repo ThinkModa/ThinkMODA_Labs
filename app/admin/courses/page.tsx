@@ -523,7 +523,7 @@ export default function CourseBuilderPage() {
     }
   }
 
-  const formatText = (format: 'bold' | 'italic' | 'underline' | 'h1' | 'h2' | 'h3' | 'regular') => {
+  const formatText = (format: 'bold' | 'italic' | 'underline' | 'h1' | 'h2' | 'h3' | 'link' | 'regular') => {
     const textarea = textareaRef.current
     if (!textarea) {
       console.log('Textarea not found')
@@ -560,6 +560,15 @@ export default function CourseBuilderPage() {
         case 'h3':
           formattedText = `### ${selectedContent}`
           break
+        case 'link':
+          // For links, we need to prompt for URL
+          const url = prompt('Enter the URL for the link:')
+          if (url) {
+            formattedText = `[${selectedContent}](${url})`
+          } else {
+            return // Don't format if user cancels
+          }
+          break
         case 'regular':
           // Remove any heading markers
           formattedText = selectedContent.replace(/^#{1,3}\s+/, '')
@@ -595,6 +604,9 @@ export default function CourseBuilderPage() {
           break
         case 'h3':
           markers = '### Heading 3'
+          break
+        case 'link':
+          markers = '[Link Text](https://example.com)'
           break
         case 'regular':
           markers = 'Regular text'
@@ -1229,6 +1241,13 @@ export default function CourseBuilderPage() {
                         <span className="text-sm font-bold">H3</span>
                       </button>
                       <button
+                        onClick={() => formatText('link')}
+                        className="px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50"
+                        title="Link"
+                      >
+                        <span className="text-sm text-blue-600">🔗</span>
+                      </button>
+                      <button
                         onClick={() => formatText('regular')}
                         className="px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50"
                         title="Regular Text"
@@ -1237,7 +1256,7 @@ export default function CourseBuilderPage() {
                       </button>
                     </div>
                     <div className="mt-1 text-xs text-gray-500">
-                      Select text and click format buttons (Bold, Italic, Underline, H1, H2, H3, Regular), or type / for embed options
+                      Select text and click format buttons (Bold, Italic, Underline, H1, H2, H3, Link, Regular), or type / for embed options
                     </div>
                   </div>
                   
