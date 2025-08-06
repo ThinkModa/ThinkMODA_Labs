@@ -7,7 +7,7 @@ import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 import { supabase } from '@/lib/supabase'
 
 // Debug: Verify this is the updated version
-console.log('Course page - Using updated Supabase services')
+console.log('Course page - Using updated Supabase services - Version 2.0')
 
 export default function CourseLessonsPage({ params }: { params: { id: string } }) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -436,7 +436,10 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     console.log('Refreshing course data...')
     localStorage.removeItem('courseData')
     localStorage.removeItem('userProgress')
-    window.location.reload()
+    
+    // Force cache refresh by adding timestamp
+    const timestamp = new Date().getTime()
+    window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + '_t=' + timestamp
   }
 
   // Function to clear progress for current user
