@@ -520,6 +520,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
       // If lesson was completed, automatically select the next lesson in the same section
       if (completed) {
+        console.log('Lesson completed, attempting auto-advance...')
+        
         // Find the current section and lesson index
         let currentSectionIndex = -1
         let currentLessonIndex = -1
@@ -530,6 +532,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           if (lessonIndex !== -1) {
             currentSectionIndex = i
             currentLessonIndex = lessonIndex
+            console.log('Found lesson at section', i, 'lesson', lessonIndex)
             break
           }
         }
@@ -542,22 +545,25 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           if (nextLessonIndex < currentSection.lessons.length) {
             // Next lesson in same section
             const nextLesson = currentSection.lessons[nextLessonIndex]
+            console.log('Auto-advancing to next lesson in same section:', nextLesson.title)
             setSelectedLesson(nextLesson.id)
             setCurrentLessonContent(nextLesson.content)
-            console.log('Auto-advancing to next lesson in section:', nextLesson.title)
           } else {
             // End of section, find next section with lessons
+            console.log('End of section, looking for next section...')
             for (let i = currentSectionIndex + 1; i < course.sections.length; i++) {
               const nextSection = course.sections[i]
               if (nextSection.lessons.length > 0) {
                 const firstLesson = nextSection.lessons[0]
+                console.log('Auto-advancing to first lesson of next section:', firstLesson.title)
                 setSelectedLesson(firstLesson.id)
                 setCurrentLessonContent(firstLesson.content)
-                console.log('Auto-advancing to first lesson of next section:', firstLesson.title)
                 break
               }
             }
           }
+        } else {
+          console.log('Could not find current lesson for auto-advance')
         }
       }
     } catch (error) {
@@ -674,10 +680,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             if (canComplete) {
                               await handleMarkLessonCompleted(selectedLesson, true)
                               
+                              // Show success message
+                              alert('Lesson completed successfully! Auto-advancing to next lesson...')
+                              
                               // Auto-refresh the page after successful completion
                               setTimeout(() => {
                                 window.location.reload()
-                              }, 500) // Small delay to show completion feedback
+                              }, 1000) // Longer delay to show completion feedback
                             } else {
                               // Show message that typeform needs to be completed
                               alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
