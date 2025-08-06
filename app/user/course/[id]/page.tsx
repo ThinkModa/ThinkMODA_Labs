@@ -500,6 +500,36 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     }
   }
 
+  // Add function to refresh user progress
+  const refreshUserProgress = async () => {
+    if (!user) return
+    
+    try {
+      const progress = await progressService.getUserProgress(user.id)
+      setUserProgress(progress)
+      console.log('Refreshed user progress:', progress)
+    } catch (error) {
+      console.error('Error refreshing user progress:', error)
+    }
+  }
+
+  // Add Typeform completion listener
+  useEffect(() => {
+    const handleTypeformCompletion = (event: MessageEvent) => {
+      // Listen for Typeform completion messages
+      if (event.origin === 'https://form.typeform.com' && 
+          event.data && 
+          typeof event.data === 'object' && 
+          event.data.type === 'form-submit-success') {
+        console.log('Typeform completed, refreshing progress...')
+        refreshUserProgress()
+      }
+    }
+
+    window.addEventListener('message', handleTypeformCompletion)
+    return () => window.removeEventListener('message', handleTypeformCompletion)
+  }, [user])
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -562,6 +592,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                     <div className="mt-8 text-center">
                       <button
                         onClick={async () => {
+                          // First refresh user progress to get latest Typeform completion status
+                          await refreshUserProgress()
+                          
+                          // Add a small delay to ensure database has updated
+                          await new Promise(resolve => setTimeout(resolve, 1000))
+                          
                           // Check if lesson can be completed (considering typeform requirements)
                           const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
                           
@@ -569,7 +605,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             handleMarkLessonCompleted(selectedLesson, true)
                           } else {
                             // Show message that typeform needs to be completed
-                            alert('Please complete the embedded form before marking this lesson as complete.')
+                            alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
                           }
                         }}
                         className="bg-green-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto w-full"
