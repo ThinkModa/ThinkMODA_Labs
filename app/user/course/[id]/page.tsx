@@ -431,6 +431,14 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     window.location.reload()
   }
 
+  // Add function to refresh course data
+  const refreshCourseData = () => {
+    console.log('Refreshing course data...')
+    localStorage.removeItem('courseData')
+    localStorage.removeItem('userProgress')
+    window.location.reload()
+  }
+
   // Function to clear progress for current user
   const clearUserProgress = async () => {
     if (!user) return
@@ -618,6 +626,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   title="Clear cache for testing"
                 >
                   <span>Clear Cache</span>
+                </button>
+                <button
+                  onClick={refreshCourseData}
+                  className="flex items-center space-x-2 text-blue-500 hover:text-blue-700 transition-colors text-xs"
+                  title="Refresh course data from server"
+                >
+                  <span>Refresh Course</span>
                 </button>
                 <button
                   onClick={handleSignOut}
