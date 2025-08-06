@@ -1245,7 +1245,7 @@ export default function CourseBuilderPage() {
                         className="px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50"
                         title="Link"
                       >
-                        <span className="text-sm text-blue-600">🔗</span>
+                        <span className="text-sm text-blue-600 font-bold">L</span>
                       </button>
                       <button
                         onClick={() => formatText('regular')}
