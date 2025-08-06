@@ -302,19 +302,37 @@ export default function CourseBuilderPage() {
     }
   }
 
-  const handleDeleteLesson = (lessonId: string) => {
-    if (selectedCourse) {
-      const updatedSections = selectedCourse.sections.map(section => ({
-        ...section,
-        lessons: section.lessons.filter(lesson => lesson.id !== lessonId)
-      }))
-      
-      const updatedCourse = {
-        ...selectedCourse,
-        sections: updatedSections
+  const handleDeleteLesson = async (lessonId: string) => {
+    if (confirm('Are you sure you want to delete this lesson?')) {
+      try {
+        // Delete the lesson via Supabase service
+        await courseService.deleteLesson(lessonId)
+        
+        // Update local state
+        if (selectedCourse) {
+          const updatedSections = selectedCourse.sections.map(section => ({
+            ...section,
+            lessons: section.lessons.filter(lesson => lesson.id !== lessonId)
+          }))
+          
+          const updatedCourse = {
+            ...selectedCourse,
+            sections: updatedSections
+          }
+          setSelectedCourse(updatedCourse)
+          setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+          
+          // Trigger real-time update
+          window.dispatchEvent(new CustomEvent('coursesUpdated', { 
+            detail: { courseId: selectedCourse.id } 
+          }))
+        }
+        
+        console.log('Lesson deleted successfully')
+      } catch (error) {
+        console.error('Error deleting lesson:', error)
+        alert('Failed to delete lesson. Please try again.')
       }
-      setSelectedCourse(updatedCourse)
-      setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
     }
   }
 
