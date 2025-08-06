@@ -31,6 +31,15 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
       try {
         const user = JSON.parse(userData)
         setUser(user)
+        
+        // Clear any cached progress when user changes
+        const lastUserId = localStorage.getItem('lastUserId')
+        if (lastUserId && lastUserId !== user.id) {
+          console.log('User changed, clearing cached progress')
+          localStorage.removeItem('userProgress')
+          localStorage.removeItem('courseData')
+        }
+        localStorage.setItem('lastUserId', user.id)
       } catch (error) {
         console.error('Error parsing user data:', error)
         localStorage.removeItem('user')
@@ -409,7 +418,16 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
   const handleSignOut = () => {
     localStorage.removeItem('user')
+    localStorage.removeItem('userProgress')
+    localStorage.removeItem('courseData')
+    localStorage.removeItem('lastUserId')
     window.location.href = '/'
+  }
+
+  // Function to clear all cached data (for testing)
+  const clearAllCache = () => {
+    localStorage.clear()
+    window.location.reload()
   }
 
   const handleMarkLessonCompleted = async (lessonId: string, completed: boolean) => {
@@ -544,13 +562,22 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <span>Progress: {completedCount}/{totalLessons}</span>
               </div>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <LogOut size={20} />
-                <span className="text-sm">Sign Out</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={clearAllCache}
+                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors text-xs"
+                  title="Clear cache for testing"
+                >
+                  <span>Clear Cache</span>
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <LogOut size={20} />
+                  <span className="text-sm">Sign Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
