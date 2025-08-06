@@ -33,25 +33,62 @@ export const progressService = {
       console.log('Progress service - Marking lesson completed:', { userId, lessonId, completed })
       
       if (completed) {
-        // Insert or update progress using regular client
-        const { data: progress, error } = await supabase
+        // First check if a record already exists
+        const { data: existingProgress, error: checkError } = await supabase
           .from('user_progress')
-          .upsert({
-            user_id: userId,
-            lesson_id: lessonId,
-            completed: true,
-            completed_at: new Date().toISOString()
-          })
-          .select()
+          .select('*')
+          .eq('user_id', userId)
+          .eq('lesson_id', lessonId)
           .single()
 
-        if (error) {
-          console.error('Error marking lesson completed:', error)
-          throw new Error('Failed to mark lesson completed')
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error('Error checking existing progress:', checkError)
         }
 
-        console.log('Progress service - Lesson marked as completed successfully')
-        return progress
+        if (existingProgress) {
+          // Update existing record
+          const { data: progress, error } = await supabase
+            .from('user_progress')
+            .update({
+              completed: true,
+              completed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+            .eq('lesson_id', lessonId)
+            .select()
+            .single()
+
+          if (error) {
+            console.error('Error updating existing progress:', error)
+            throw new Error('Failed to update lesson progress')
+          }
+
+          console.log('Progress service - Updated existing progress record')
+          return progress
+        } else {
+          // Create new record
+          const { data: progress, error } = await supabase
+            .from('user_progress')
+            .insert({
+              user_id: userId,
+              lesson_id: lessonId,
+              completed: true,
+              completed_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single()
+
+          if (error) {
+            console.error('Error creating new progress record:', error)
+            throw new Error('Failed to create lesson progress')
+          }
+
+          console.log('Progress service - Created new progress record')
+          return progress
+        }
       } else {
         // Delete progress record using regular client
         const { error } = await supabase
