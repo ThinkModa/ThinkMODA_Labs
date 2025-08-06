@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight } from 'lucide-react'
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
+import { supabase } from '@/lib/supabase'
 
 // Debug: Verify this is the updated version
 console.log('Course page - Using updated Supabase services')
@@ -430,6 +431,41 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     window.location.reload()
   }
 
+  // Function to clear progress for current user
+  const clearUserProgress = async () => {
+    if (!user) return
+    
+    try {
+      // Clear from database
+      const { error } = await supabase
+        .from('user_progress')
+        .delete()
+        .eq('user_id', user.id)
+      
+      if (error) {
+        console.error('Error clearing progress:', error)
+        alert('Error clearing progress. Please try again.')
+        return
+      }
+      
+      // Clear from local state
+      setUserProgress([])
+      
+      // Clear cache
+      localStorage.removeItem('userProgress')
+      localStorage.removeItem('courseData')
+      
+      console.log('Progress cleared for user:', user.id)
+      alert('Progress cleared successfully!')
+      
+      // Refresh the page
+      window.location.reload()
+    } catch (error) {
+      console.error('Error clearing progress:', error)
+      alert('Error clearing progress. Please try again.')
+    }
+  }
+
   const handleMarkLessonCompleted = async (lessonId: string, completed: boolean) => {
     if (!user) return
 
@@ -563,6 +599,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                 <span>Progress: {completedCount}/{totalLessons}</span>
               </div>
               <div className="flex items-center space-x-2">
+                <button
+                  onClick={clearUserProgress}
+                  className="flex items-center space-x-2 text-red-500 hover:text-red-700 transition-colors text-xs"
+                  title="Clear progress for current user"
+                >
+                  <span>Clear Progress</span>
+                </button>
                 <button
                   onClick={clearAllCache}
                   className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors text-xs"
