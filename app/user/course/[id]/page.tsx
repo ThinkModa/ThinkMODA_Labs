@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight } from 'lucide-react'
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
@@ -501,7 +501,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   }
 
   // Add function to refresh user progress
-  const refreshUserProgress = useCallback(async () => {
+  const refreshUserProgress = async () => {
     if (!user) return
     
     try {
@@ -511,24 +511,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     } catch (error) {
       console.error('Error refreshing user progress:', error)
     }
-  }, [user])
-
-  // Add Typeform completion listener
-  useEffect(() => {
-    const handleTypeformCompletion = (event: MessageEvent) => {
-      // Listen for Typeform completion messages
-      if (event.origin === 'https://form.typeform.com' && 
-          event.data && 
-          typeof event.data === 'object' && 
-          event.data.type === 'form-submit-success') {
-        console.log('Typeform completed, refreshing progress...')
-        refreshUserProgress()
-      }
-    }
-
-    window.addEventListener('message', handleTypeformCompletion)
-    return () => window.removeEventListener('message', handleTypeformCompletion)
-  }, [refreshUserProgress])
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
