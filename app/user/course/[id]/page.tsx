@@ -453,6 +453,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         }
       })
 
+      // Force a complete refresh of progress data from server
+      setTimeout(async () => {
+        try {
+          const freshProgress = await progressService.getUserProgress(user.id)
+          setUserProgress(freshProgress)
+          console.log('Refreshed progress after lesson completion:', freshProgress)
+        } catch (error) {
+          console.error('Error refreshing progress:', error)
+        }
+      }, 1000)
+
       // If lesson was completed, automatically select the next lesson in the same section
       if (completed) {
         // Find the current section and lesson index
@@ -592,6 +603,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             
                             if (canComplete) {
                               await handleMarkLessonCompleted(selectedLesson, true)
+                              
+                              // Auto-refresh the page after successful completion
+                              setTimeout(() => {
+                                window.location.reload()
+                              }, 500) // Small delay to show completion feedback
                             } else {
                               // Show message that typeform needs to be completed
                               alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
