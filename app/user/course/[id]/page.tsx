@@ -574,21 +574,36 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
                     <div className="mt-8 text-center">
                       <button
-                        onClick={async () => {
-                          // First refresh user progress to get latest Typeform completion status
-                          await refreshUserProgress()
+                        onClick={async (event) => {
+                          // Prevent multiple rapid clicks
+                          const button = event.target as HTMLButtonElement
+                          if (button.disabled) return
+                          button.disabled = true
                           
-                          // Add a small delay to ensure database has updated
-                          await new Promise(resolve => setTimeout(resolve, 1000))
-                          
-                          // Check if lesson can be completed (considering typeform requirements)
-                          const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
-                          
-                          if (canComplete) {
-                            handleMarkLessonCompleted(selectedLesson, true)
-                          } else {
-                            // Show message that typeform needs to be completed
-                            alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
+                          try {
+                            // First refresh user progress to get latest Typeform completion status
+                            await refreshUserProgress()
+                            
+                            // Add a small delay to ensure database has updated
+                            await new Promise(resolve => setTimeout(resolve, 1000))
+                            
+                            // Check if lesson can be completed (considering typeform requirements)
+                            const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
+                            
+                            if (canComplete) {
+                              await handleMarkLessonCompleted(selectedLesson, true)
+                            } else {
+                              // Show message that typeform needs to be completed
+                              alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
+                            }
+                          } catch (error) {
+                            console.error('Error completing lesson:', error)
+                            alert('There was an error completing the lesson. Please try again.')
+                          } finally {
+                            // Re-enable button after a delay
+                            setTimeout(() => {
+                              button.disabled = false
+                            }, 2000)
                           }
                         }}
                         className="bg-green-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto w-full"
