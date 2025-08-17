@@ -28,6 +28,7 @@ export default function CourseBuilderPage() {
   const [isCreatingLesson, setIsCreatingLesson] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
   
   const [newCourse, setNewCourse] = useState({ title: '', description: '', visibility: 'OPEN' as 'OPEN' | 'PRIVATE' })
   const [newSection, setNewSection] = useState({ title: '', description: '' })
@@ -159,8 +160,9 @@ export default function CourseBuilderPage() {
     }
   }
 
-  const handleCreateLesson = () => {
+  const handleCreateLesson = (sectionId: string) => {
     setIsCreatingLesson(true)
+    setSelectedSectionId(sectionId)
     setContent('')
     setNewLesson({ title: '', content: '', details: '' })
     
@@ -175,27 +177,29 @@ export default function CourseBuilderPage() {
 
   const handleSaveLesson = async () => {
     if (newLesson.title && selectedCourse && selectedCourse.sections.length > 0) {
+      // Use selectedSectionId if available, otherwise use first section
+      const targetSectionId = selectedSectionId || selectedCourse.sections[0].id
+      
       try {
-        const firstSection = selectedCourse.sections[0]
         const lesson = await courseService.createLesson({
           title: newLesson.title,
           content: content, // Use content state directly
           details: newLesson.details,
-          sectionId: firstSection.id
+          sectionId: targetSectionId
         })
         
         console.log('Saving lesson via API:', lesson.title)
         console.log('Lesson content:', lesson.content)
         
-        // Add lesson to the first section
+        // Add lesson to the selected section
         // Ensure all sections have lessons array
-        const updatedSections = selectedCourse.sections.map((section, index) => {
+        const updatedSections = selectedCourse.sections.map((section) => {
           const sectionWithLessons = {
             ...section,
             lessons: section.lessons || []
           }
           
-          if (index === 0) {
+          if (section.id === targetSectionId) {
             return { 
               ...sectionWithLessons, 
               lessons: [...sectionWithLessons.lessons, lesson] 
@@ -219,6 +223,7 @@ export default function CourseBuilderPage() {
         setNewLesson({ title: '', content: '', details: '' })
         setContent('')
         setIsCreatingLesson(false)
+        setSelectedSectionId(null)
       } catch (error) {
         console.error('Error creating lesson:', error)
         alert('Failed to create lesson. Please try again.')
@@ -989,7 +994,7 @@ export default function CourseBuilderPage() {
 
                   {/* Add Lesson Button */}
                   <button
-                    onClick={handleCreateLesson}
+                    onClick={() => handleCreateLesson(section.id)}
                     className="mt-4 w-full flex items-center justify-center space-x-2 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
                   >
                     <Plus size={16} />
