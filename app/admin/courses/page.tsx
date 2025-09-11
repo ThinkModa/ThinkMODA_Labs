@@ -30,7 +30,7 @@ export default function CourseBuilderPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
   
-  const [newCourse, setNewCourse] = useState({ title: '', description: '', visibility: 'OPEN' as 'OPEN' | 'PRIVATE' })
+  const [newCourse, setNewCourse] = useState({ title: '', description: '', visibility: 'public' as 'public' | 'private' })
   const [newSection, setNewSection] = useState({ title: '', description: '' })
   const [newLesson, setNewLesson] = useState({ title: '', content: '', details: '' })
   
@@ -89,7 +89,7 @@ export default function CourseBuilderPage() {
           sections: []
         }
         setCourses([...courses, courseWithSections])
-        setNewCourse({ title: '', description: '', visibility: 'OPEN' })
+        setNewCourse({ title: '', description: '', visibility: 'public' })
         setIsCreatingCourse(false)
         
         // Trigger real-time update for user side
@@ -797,11 +797,11 @@ export default function CourseBuilderPage() {
                           <span>Click to edit</span>
                         </div>
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          course.visibility === 'OPEN'
+                          course.visibility === 'public'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {course.visibility === 'OPEN' ? 'Open' : 'Private'}
+                          {course.visibility === 'public' ? 'Public' : 'Private'}
                         </span>
                       </div>
                     </div>
@@ -859,7 +859,7 @@ export default function CourseBuilderPage() {
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 mb-1">Course Visibility</h3>
                     <p className="text-sm text-gray-600">
-                      {selectedCourse.visibility === 'OPEN' 
+                      {selectedCourse.visibility === 'public' 
                         ? 'This course is visible to all users' 
                         : 'This course is private and only available to invited users'}
                     </p>
@@ -869,10 +869,10 @@ export default function CourseBuilderPage() {
                       <input
                         type="radio"
                         name={`visibility-${selectedCourse.id}`}
-                        value="OPEN"
-                        checked={selectedCourse.visibility === 'OPEN'}
+                        value="public"
+                        checked={selectedCourse.visibility === 'public'}
                         onChange={async (e) => {
-                          const newVisibility = e.target.value as 'OPEN' | 'PRIVATE'
+                          const newVisibility = e.target.value as 'public' | 'private'
                           try {
                             const updatedCourse = await courseService.updateCourse(selectedCourse.id, {
                               title: selectedCourse.title,
@@ -892,16 +892,16 @@ export default function CourseBuilderPage() {
                         }}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">Open (All Users)</span>
+                      <span className="text-sm text-gray-700">Public (All Users)</span>
                     </label>
                     <label className="flex items-center">
                       <input
                         type="radio"
                         name={`visibility-${selectedCourse.id}`}
-                        value="PRIVATE"
-                        checked={selectedCourse.visibility === 'PRIVATE'}
+                        value="private"
+                        checked={selectedCourse.visibility === 'private'}
                         onChange={async (e) => {
-                          const newVisibility = e.target.value as 'OPEN' | 'PRIVATE'
+                          const newVisibility = e.target.value as 'public' | 'private'
                           try {
                             const updatedCourse = await courseService.updateCourse(selectedCourse.id, {
                               title: selectedCourse.title,
@@ -1048,20 +1048,20 @@ export default function CourseBuilderPage() {
                     <input
                       type="radio"
                       name="visibility"
-                      value="OPEN"
-                      checked={newCourse.visibility === 'OPEN'}
-                      onChange={(e) => setNewCourse({ ...newCourse, visibility: e.target.value as 'OPEN' | 'PRIVATE' })}
+                      value="public"
+                      checked={newCourse.visibility === 'public'}
+                      onChange={(e) => setNewCourse({ ...newCourse, visibility: e.target.value as 'public' | 'private' })}
                       className="mr-2"
                     />
-                    <span className="text-sm text-gray-700">Open (All Users)</span>
+                    <span className="text-sm text-gray-700">Public (All Users)</span>
                   </label>
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="visibility"
-                      value="PRIVATE"
-                      checked={newCourse.visibility === 'PRIVATE'}
-                      onChange={(e) => setNewCourse({ ...newCourse, visibility: e.target.value as 'OPEN' | 'PRIVATE' })}
+                      value="private"
+                      checked={newCourse.visibility === 'private'}
+                      onChange={(e) => setNewCourse({ ...newCourse, visibility: e.target.value as 'public' | 'private' })}
                       className="mr-2"
                     />
                     <span className="text-sm text-gray-700">Private (Invite Only)</span>

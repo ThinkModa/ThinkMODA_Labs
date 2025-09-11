@@ -6,7 +6,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 console.log('Supabase config:', {
   url: supabaseUrl,
   hasKey: !!supabaseAnonKey,
-  keyLength: supabaseAnonKey?.length
+  keyLength: supabaseAnonKey?.length,
+  keyPreview: supabaseAnonKey?.substring(0, 20) + '...',
+  fullKey: supabaseAnonKey
 })
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
@@ -27,7 +29,7 @@ export interface Course {
   id: string
   title: string
   description: string | null
-  visibility: 'OPEN' | 'PRIVATE'
+  visibility: 'public' | 'private'
   created_at: string
   updated_at: string
 }

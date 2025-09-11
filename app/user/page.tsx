@@ -70,8 +70,8 @@ export default function UserLandingPage() {
         setUserProgress(progress)
         
         if (courses.length > 0) {
-          // Filter to only show OPEN courses
-          const openCourses = courses.filter((course: any) => course.visibility === 'OPEN')
+          // Filter to only show public courses
+          const openCourses = courses.filter((course: any) => course.visibility === 'public')
           console.log('User side - Open courses:', openCourses.length, openCourses.map(c => ({ id: c.id, title: c.title })))
           
           const formattedCourses = openCourses.map((course: any) => {
@@ -142,7 +142,7 @@ export default function UserLandingPage() {
               {user && (
                 <div className="flex items-center space-x-2 text-gray-600">
                   <User size={20} />
-                  <span className="text-sm">Hello, {user.firstName}!</span>
+                  <span className="text-sm">Hello, {user.first_name}!</span>
                 </div>
               )}
               <button

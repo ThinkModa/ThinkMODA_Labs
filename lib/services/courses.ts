@@ -2,7 +2,7 @@ export interface Course {
   id: string
   title: string
   description: string
-  visibility: 'OPEN' | 'PRIVATE'
+  visibility: 'public' | 'private'
   sections: Section[]
   createdAt: string
   updatedAt: string
@@ -49,7 +49,7 @@ export const courseService = {
   },
 
   // Create a new course
-  async createCourse(data: { title: string; description: string; visibility?: 'OPEN' | 'PRIVATE' }): Promise<Course> {
+  async createCourse(data: { title: string; description: string; visibility?: 'public' | 'private' }): Promise<Course> {
     const response = await fetch('/api/courses', {
       method: 'POST',
       headers: {
@@ -64,7 +64,7 @@ export const courseService = {
   },
 
   // Update a course
-  async updateCourse(id: string, data: { title: string; description: string; visibility?: 'OPEN' | 'PRIVATE' }): Promise<Course> {
+  async updateCourse(id: string, data: { title: string; description: string; visibility?: 'public' | 'private' }): Promise<Course> {
     const response = await fetch(`/api/courses/${id}`, {
       method: 'PUT',
       headers: {

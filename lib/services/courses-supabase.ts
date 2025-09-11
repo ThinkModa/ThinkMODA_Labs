@@ -87,7 +87,7 @@ export const courseService = {
   async createCourse(courseData: {
     title: string
     description?: string
-    visibility?: 'OPEN' | 'PRIVATE'
+    visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
       const { data: course, error } = await supabase
@@ -95,7 +95,7 @@ export const courseService = {
         .insert({
           title: courseData.title,
           description: courseData.description || '',
-          visibility: courseData.visibility || 'OPEN'
+          visibility: courseData.visibility || 'public'
         })
         .select()
         .single()
@@ -116,7 +116,7 @@ export const courseService = {
   async updateCourse(id: string, updates: {
     title?: string
     description?: string
-    visibility?: 'OPEN' | 'PRIVATE'
+    visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
       const { data: course, error } = await supabase
