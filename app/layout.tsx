@@ -8,11 +8,32 @@ export const metadata: Metadata = {
 
 // Simple server-side staging banner
 function StagingBanner() {
-  // Check if we're in staging environment
-  const isStaging = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('gnyuzloqayuhqaikghmm')
+  // Force show banner in staging - we'll use a different approach
+  // Check multiple ways to detect staging
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const vercelUrl = process.env.VERCEL_URL || ''
+  const nodeEnv = process.env.NODE_ENV || ''
   
-  if (!isStaging) return null
+  // Log for debugging
+  console.log('StagingBanner Debug:', {
+    supabaseUrl,
+    vercelUrl,
+    nodeEnv,
+    includesStaging: supabaseUrl.includes('gnyuzloqayuhqaikghmm'),
+    includesVercelStaging: vercelUrl.includes('staging')
+  })
+  
+  // Show banner if we detect staging environment
+  const isStaging = supabaseUrl.includes('gnyuzloqayuhqaikghmm') || 
+                   vercelUrl.includes('staging') ||
+                   supabaseUrl.includes('staging')
+  
+  if (!isStaging) {
+    console.log('StagingBanner: Not showing - not in staging environment')
+    return null
+  }
 
+  console.log('StagingBanner: Showing banner')
   return (
     <div className="bg-orange-50 border-b-2 border-orange-200 py-3 px-4 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-center">
