@@ -28,7 +28,10 @@ function StagingBanner() {
                    vercelUrl.includes('staging') ||
                    supabaseUrl.includes('staging')
   
-  if (!isStaging) {
+  // TEMPORARY: Force show banner for debugging
+  const forceShow = true // Change this to false once we fix the detection
+  
+  if (!isStaging && !forceShow) {
     console.log('StagingBanner: Not showing - not in staging environment')
     return null
   }
