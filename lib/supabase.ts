@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Production Supabase configuration
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mqnzukqkumtfcnnahhyp.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xbnp1a3FrdW10ZmNubmFoaHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNDk5MzksImV4cCI6MjA2OTkyNTkzOX0.XyRX0E9KG9X3TQMzDe8FeEsq5dtofZrH1CNqDJ3bd-I'
 
 console.log('Supabase config:', {
   url: supabaseUrl,
