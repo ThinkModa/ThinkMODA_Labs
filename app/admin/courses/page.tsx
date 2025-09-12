@@ -16,7 +16,8 @@ import {
   FileText,
   Image,
   FormInput,
-  ChevronDown
+  ChevronDown,
+  Eye
 } from 'lucide-react'
 import { courseService, CourseWithSections, Section, Lesson } from '@/lib/services/courses-supabase'
 
@@ -710,6 +711,12 @@ export default function CourseBuilderPage() {
     }
   }
 
+  const handlePreviewCourse = (course: CourseWithSections) => {
+    // Open course preview in a new tab with preview mode
+    const previewUrl = `/user/course/${course.id}?preview=true&admin=true`
+    window.open(previewUrl, '_blank')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -842,6 +849,13 @@ export default function CourseBuilderPage() {
                     className="btn-secondary"
                   >
                     Back to Courses
+                  </button>
+                  <button
+                    onClick={() => handlePreviewCourse(selectedCourse)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                  >
+                    <Eye size={18} />
+                    <span>Preview Course</span>
                   </button>
                   <button
                     onClick={() => handleDeleteCourse(selectedCourse.id)}

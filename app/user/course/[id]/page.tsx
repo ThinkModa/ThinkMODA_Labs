@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 import { supabase } from '@/lib/supabase'
@@ -10,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 console.log('Course page - Using updated Supabase services - Version 2.0')
 
 export default function CourseLessonsPage({ params }: { params: { id: string } }) {
+  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
   const [completedLessons] = useState(['intro-to-framer', 'design-system-styles'])
@@ -19,10 +21,21 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const [user, setUser] = useState<any>(null)
   const [userProgress, setUserProgress] = useState<UserProgress[]>([])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  
+  // Preview mode detection
+  const isPreviewMode = searchParams.get('preview') === 'true'
+  const isAdminPreview = searchParams.get('admin') === 'true'
 
   // Check authentication and load user data
   useEffect(() => {
     const checkAuth = () => {
+      // In preview mode, skip authentication check
+      if (isPreviewMode) {
+        console.log('Preview mode enabled - skipping authentication')
+        setUser({ id: 'preview-user', first_name: 'Preview', last_name: 'User', role: 'ADMIN' })
+        return
+      }
+
       const userData = localStorage.getItem('user')
       if (!userData) {
         window.location.href = '/'
@@ -49,7 +62,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     }
 
     checkAuth()
-  }, [])
+  }, [isPreviewMode])
 
   // Load course data and progress from API
   useEffect(() => {
@@ -651,6 +664,20 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         </div>
       </header>
 
+      {/* Preview Mode Banner */}
+      {isPreviewMode && (
+        <div className="bg-blue-50 border-b-2 border-blue-200 py-3 px-4 shadow-sm">
+          <div className="max-w-7xl mx-auto flex items-center justify-center">
+            <div className="flex items-center space-x-2 text-sm text-blue-800">
+              <Eye size={16} />
+              <span className="font-semibold">PREVIEW MODE</span>
+              <span className="text-blue-600">•</span>
+              <span className="text-xs text-blue-700">Typeform requirements bypassed for testing</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Layout */}
       <div className="block lg:hidden">
         {/* Full-width content area */}
@@ -693,22 +720,29 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             // Add a small delay to ensure database has updated
                             await new Promise(resolve => setTimeout(resolve, 1000))
                             
-                            // Check if lesson can be completed (considering typeform requirements)
-                            const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
-                            
-                            if (canComplete) {
+                            // In preview mode, always allow completion
+                            if (isPreviewMode) {
                               await handleMarkLessonCompleted(selectedLesson, true)
-                              
-                              // Show success message
-                              alert('Lesson completed successfully! Auto-advancing to next lesson...')
-                              
-                              // Auto-refresh the page after successful completion
-                              setTimeout(() => {
-                                window.location.reload()
-                              }, 1000) // Longer delay to show completion feedback
+                              alert('Lesson completed successfully! (Preview Mode)')
+                              await loadUserProgress()
                             } else {
-                              // Show message that typeform needs to be completed
-                              alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
+                              // Check if lesson can be completed (considering typeform requirements)
+                              const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
+                              
+                              if (canComplete) {
+                                await handleMarkLessonCompleted(selectedLesson, true)
+                                
+                                // Show success message
+                                alert('Lesson completed successfully! Auto-advancing to next lesson...')
+                                
+                                // Auto-refresh the page after successful completion
+                                setTimeout(() => {
+                                  window.location.reload()
+                                }, 1000) // Longer delay to show completion feedback
+                              } else {
+                                // Show message that typeform needs to be completed
+                                alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
+                              }
                             }
                           } catch (error) {
                             console.error('Error completing lesson:', error)
@@ -970,14 +1004,20 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                         <div className="mt-8 text-center">
                           <button
                             onClick={async () => {
-                              // Check if lesson can be completed (considering typeform requirements)
-                              const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
-                              
-                              if (canComplete) {
+                              // In preview mode, always allow completion
+                              if (isPreviewMode) {
                                 handleMarkLessonCompleted(selectedLesson, true)
+                                alert('Lesson completed successfully! (Preview Mode)')
                               } else {
-                                // Show message that typeform needs to be completed
-                                alert('Please complete the embedded form before marking this lesson as complete.')
+                                // Check if lesson can be completed (considering typeform requirements)
+                                const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
+                                
+                                if (canComplete) {
+                                  handleMarkLessonCompleted(selectedLesson, true)
+                                } else {
+                                  // Show message that typeform needs to be completed
+                                  alert('Please complete the embedded form before marking this lesson as complete.')
+                                }
                               }
                             }}
                             className="bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
