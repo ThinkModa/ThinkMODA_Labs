@@ -80,16 +80,22 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         console.log('User ID:', user.id)
         console.log('Preview mode active:', isPreviewMode)
         
-        // Load course and progress in parallel
+        // Load course and progress in parallel (skip progress in preview mode)
         const [foundCourse, progress] = await Promise.all([
           courseService.getCourse(params.id),
-          progressService.getUserProgress(user.id)
+          isPreviewMode ? Promise.resolve([]) : progressService.getUserProgress(user.id)
         ])
         
         console.log('User side - Loading course data for ID:', params.id)
         console.log('User side - Found course:', foundCourse)
         console.log('User side - Course sections:', foundCourse?.sections)
         console.log('User side - Loading progress:', progress.length, progress)
+        
+        if (!foundCourse) {
+          console.error('Course not found for ID:', params.id)
+          alert('Course not found. Please check the course ID.')
+          return
+        }
         
         setCourse(foundCourse)
         setUserProgress(progress)
