@@ -724,7 +724,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             if (isPreviewMode) {
                               await handleMarkLessonCompleted(selectedLesson, true)
                               alert('Lesson completed successfully! (Preview Mode)')
-                              await loadUserProgress()
+                              await refreshUserProgress()
                             } else {
                               // Check if lesson can be completed (considering typeform requirements)
                               const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
