@@ -90,16 +90,24 @@ export const courseService = {
     visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
+      console.log('createCourse called with:', courseData)
+      
       // Convert frontend visibility values to database enum values
       const dbVisibility = courseData.visibility === 'private' ? 'PRIVATE' : 'OPEN'
       
+      console.log('Converted visibility:', dbVisibility)
+      
+      const insertData = {
+        title: courseData.title,
+        description: courseData.description || '',
+        visibility: dbVisibility
+      }
+      
+      console.log('Inserting course with data:', insertData)
+      
       const { data: course, error } = await supabase
         .from('courses')
-        .insert({
-          title: courseData.title,
-          description: courseData.description || '',
-          visibility: dbVisibility
-        })
+        .insert(insertData)
         .select()
         .single()
 
@@ -108,6 +116,7 @@ export const courseService = {
         throw new Error('Failed to create course')
       }
 
+      console.log('Course created successfully:', course)
       return course
     } catch (error) {
       console.error('Error in createCourse:', error)
