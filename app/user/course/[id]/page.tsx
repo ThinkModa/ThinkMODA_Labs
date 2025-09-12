@@ -747,7 +747,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             // In preview mode, always allow completion
                             if (isPreviewMode) {
                               // Update local preview progress
-                              setPreviewProgress(prev => new Set([...prev, selectedLesson]))
+                              setPreviewProgress(prev => {
+                                const newSet = new Set(prev)
+                                newSet.add(selectedLesson)
+                                return newSet
+                              })
                               alert('Lesson completed successfully! (Preview Mode)')
                               console.log('Preview mode - lesson completed:', selectedLesson)
                             } else {
@@ -1032,7 +1036,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                               // In preview mode, always allow completion
                               if (isPreviewMode) {
                                 // Update local preview progress
-                                setPreviewProgress(prev => new Set([...prev, selectedLesson]))
+                                setPreviewProgress(prev => {
+                                  const newSet = new Set(prev)
+                                  newSet.add(selectedLesson)
+                                  return newSet
+                                })
                                 alert('Lesson completed successfully! (Preview Mode)')
                                 console.log('Preview mode - lesson completed:', selectedLesson)
                               } else {
