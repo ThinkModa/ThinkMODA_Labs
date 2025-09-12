@@ -214,6 +214,8 @@ export const courseService = {
     sectionId: string
   }): Promise<Lesson> {
     try {
+      console.log('createLesson called with:', lessonData)
+      
       // Get the next order position for this section
       const { data: existingLessons, error: countError } = await supabase
         .from('lessons')
@@ -231,19 +233,25 @@ export const courseService = {
         ? (parseInt(existingLessons[0].order_position) + 1).toString()
         : '1'
 
+      console.log('Next order position:', nextOrderPosition)
+
+      const insertData = {
+        title: lessonData.title,
+        content: lessonData.content,
+        details: lessonData.details || '',
+        description: lessonData.details || '', // Use details as description
+        section_id: lessonData.sectionId,
+        content_type: 'rich_text',
+        order_position: nextOrderPosition,
+        is_published: true,
+        content_data: { content: lessonData.content } // Store content in content_data as well
+      }
+
+      console.log('Inserting lesson with data:', insertData)
+
       const { data: lesson, error } = await supabase
         .from('lessons')
-        .insert({
-          title: lessonData.title,
-          content: lessonData.content,
-          details: lessonData.details || '',
-          description: lessonData.details || '', // Use details as description
-          section_id: lessonData.sectionId,
-          content_type: 'rich_text',
-          order_position: nextOrderPosition,
-          is_published: true,
-          content_data: { content: lessonData.content } // Store content in content_data as well
-        })
+        .insert(insertData)
         .select()
         .single()
 
@@ -252,6 +260,7 @@ export const courseService = {
         throw new Error('Failed to create lesson')
       }
 
+      console.log('Lesson created successfully:', lesson)
       return lesson
     } catch (error) {
       console.error('Error in createLesson:', error)
