@@ -830,7 +830,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
             {/* Sections */}
             <div className="space-y-6">
-              {course.sections.map((section: any, sectionIndex: number) => {
+              {course.sections && course.sections.length > 0 ? course.sections.map((section: any, sectionIndex: number) => {
                 const isSectionUnlockedState = isSectionUnlocked(sectionIndex)
                 const isSectionCompletedState = isSectionCompleted(section)
                 
@@ -901,7 +901,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                     </div>
                   </div>
                 )
-              })}
+              }) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No sections available for this course yet.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
