@@ -25,6 +25,10 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   // Preview mode detection
   const isPreviewMode = searchParams.get('preview') === 'true'
   const isAdminPreview = searchParams.get('admin') === 'true'
+  
+  console.log('Course page loaded with params:', params)
+  console.log('Preview mode:', isPreviewMode)
+  console.log('Admin preview:', isAdminPreview)
 
   // Check authentication and load user data
   useEffect(() => {
@@ -73,6 +77,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         setIsLoading(true)
         
         console.log('Course page - Loading course with ID:', params.id)
+        console.log('User ID:', user.id)
+        console.log('Preview mode active:', isPreviewMode)
         
         // Load course and progress in parallel
         const [foundCourse, progress] = await Promise.all([
@@ -82,6 +88,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         
         console.log('User side - Loading course data for ID:', params.id)
         console.log('User side - Found course:', foundCourse)
+        console.log('User side - Course sections:', foundCourse?.sections)
         console.log('User side - Loading progress:', progress.length, progress)
         
         setCourse(foundCourse)

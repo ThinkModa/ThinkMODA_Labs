@@ -713,7 +713,13 @@ export default function CourseBuilderPage() {
 
   const handlePreviewCourse = (course: CourseWithSections) => {
     // Open course preview in a new tab with preview mode
+    console.log('Previewing course:', course)
+    console.log('Course ID:', course.id)
+    console.log('Course title:', course.title)
+    
     const previewUrl = `/user/course/${course.id}?preview=true&admin=true`
+    console.log('Preview URL:', previewUrl)
+    
     window.open(previewUrl, '_blank')
   }
 
