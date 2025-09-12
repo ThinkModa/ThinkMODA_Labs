@@ -81,15 +81,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           return
         }
         
+        console.log('Course loaded:', foundCourse)
+        console.log('Course sections:', foundCourse?.sections)
         setCourse(foundCourse)
         setUserProgress(progress)
         
         // Set first lesson as selected by default if no lesson is currently selected
-        if (foundCourse && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons.length > 0) {
+        if (foundCourse && foundCourse.sections && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons.length > 0) {
           const firstLesson = foundCourse.sections[0].lessons[0]
           setSelectedLesson(firstLesson.id)
           setCurrentLessonContent(firstLesson.content)
-        } else if (foundCourse && selectedLesson) {
+        } else if (foundCourse && foundCourse.sections && selectedLesson) {
           // Update current lesson content if lesson is still selected
           for (const section of foundCourse.sections) {
             const lesson = section.lessons.find((l: any) => l.id === selectedLesson)
@@ -688,7 +690,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           <div className="p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Content</h3>
             
-            {course.sections.map((section: any, sectionIndex: number) => {
+            {course.sections && course.sections.length > 0 ? course.sections.map((section: any, sectionIndex: number) => {
               const isSectionUnlockedState = isSectionUnlocked(sectionIndex)
               const isSectionCompletedState = isSectionCompleted(section)
               const isExpanded = expandedSections.has(section.id)
@@ -776,7 +778,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   )}
                 </div>
               )
-            })}
+            }) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No sections available for this course yet.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
