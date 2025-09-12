@@ -256,23 +256,16 @@ export const courseService = {
 
       console.log('Next order position:', nextOrderPosition)
 
-      // Start with basic required fields
+      // Start with only the absolutely required fields that we know exist
       const insertData: any = {
         title: lessonData.title,
         content: lessonData.content,
-        details: lessonData.details || '',
         section_id: lessonData.sectionId
       }
 
-      // Try to add optional fields if they exist
-      try {
-        insertData.description = lessonData.details || ''
-        insertData.content_type = 'rich_text'
-        insertData.order_position = nextOrderPosition
-        insertData.is_published = true
-        insertData.content_data = { content: lessonData.content }
-      } catch (optionalError) {
-        console.log('Some optional fields may not exist in database:', optionalError)
+      // Add details if provided (this column exists)
+      if (lessonData.details) {
+        insertData.details = lessonData.details
       }
 
       console.log('Inserting lesson with data:', insertData)
