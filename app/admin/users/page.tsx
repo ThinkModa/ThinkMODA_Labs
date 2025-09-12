@@ -106,7 +106,6 @@ export default function AdminUsersPage() {
         setUsers(usersWithProgress)
         setCourses(allCourses)
       } catch (error) {
-        console.error('Error loading users data:', error)
       } finally {
         setIsLoading(false)
       }

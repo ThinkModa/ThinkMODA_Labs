@@ -22,7 +22,6 @@ export default function SignInPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted, isSignUp:', isSignUp)
     setIsLoading(true)
     setError('')
 
@@ -35,7 +34,6 @@ export default function SignInPage() {
 
     try {
       if (isSignUp) {
-        console.log('Starting signup process...')
         // Sign up using Supabase service
         const result = await authService.signUp({
           first_name: formData.firstName,
@@ -51,15 +49,12 @@ export default function SignInPage() {
         }
 
         // Auto sign in after sign up
-        console.log('Signup successful, auto-signing in...')
         await handleSignIn()
       } else {
-        console.log('Starting signin process...')
         // Sign in
         await handleSignIn()
       }
     } catch (error) {
-      console.error('Auth error:', error)
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
@@ -78,16 +73,13 @@ export default function SignInPage() {
 
     // Store user data in localStorage (in production, use secure session management)
     localStorage.setItem('user', JSON.stringify(result.user))
-    console.log('User data stored in localStorage:', result.user)
 
     // Small delay to ensure localStorage is set before redirect
     setTimeout(() => {
       // Redirect based on user role
       if (result.user && result.user.role === 'ADMIN') {
-        console.log('Redirecting to admin dashboard...')
         window.location.href = '/admin'
       } else if (result.user) {
-        console.log('Redirecting to user dashboard...')
         window.location.href = '/user'
       }
     }, 100)
@@ -101,20 +93,7 @@ export default function SignInPage() {
   }
 
   return (
-    <>
-      {/* Staging Banner */}
-      <div className="bg-orange-50 border-b-2 border-orange-200 py-3 px-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-center">
-          <div className="flex items-center space-x-2 text-sm text-orange-800">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-            <span className="font-semibold">STAGING ENVIRONMENT</span>
-            <span className="text-orange-600">•</span>
-            <span className="text-xs text-orange-700">For testing purposes only</span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-md w-full space-y-8 p-8">
         {/* Header */}
         <div className="text-center">
@@ -311,8 +290,8 @@ export default function SignInPage() {
         <div className="text-center text-sm text-gray-500">
           <p>© 2025 ThinkMODA. All rights reserved.</p>
         </div>
+        </div>
       </div>
     </div>
-    </>
   )
 } 

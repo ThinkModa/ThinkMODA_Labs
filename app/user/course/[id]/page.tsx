@@ -7,8 +7,6 @@ import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 import { supabase } from '@/lib/supabase'
 
-// Debug: Verify this is the updated version
-console.log('Course page - Using updated Supabase services - Version 2.0')
 
 export default function CourseLessonsPage({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams()
@@ -27,16 +25,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const isPreviewMode = searchParams.get('preview') === 'true'
   const isAdminPreview = searchParams.get('admin') === 'true'
   
-  console.log('Course page loaded with params:', params)
-  console.log('Preview mode:', isPreviewMode)
-  console.log('Admin preview:', isAdminPreview)
 
-  // Check authentication and load user data
+    // Check authentication and load user data
   useEffect(() => {
     const checkAuth = () => {
       // In preview mode, skip authentication check
       if (isPreviewMode) {
-        console.log('Preview mode enabled - skipping authentication')
         setUser({ id: 'preview-user', first_name: 'Preview', last_name: 'User', role: 'ADMIN' })
         return
       }
@@ -54,13 +48,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         // Clear any cached progress when user changes
         const lastUserId = localStorage.getItem('lastUserId')
         if (lastUserId && lastUserId !== user.id) {
-          console.log('User changed, clearing cached progress')
           localStorage.removeItem('userProgress')
           localStorage.removeItem('courseData')
         }
         localStorage.setItem('lastUserId', user.id)
       } catch (error) {
-        console.error('Error parsing user data:', error)
         localStorage.removeItem('user')
         window.location.href = '/'
       }
@@ -77,9 +69,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
       try {
         setIsLoading(true)
         
-        console.log('Course page - Loading course with ID:', params.id)
-        console.log('User ID:', user.id)
-        console.log('Preview mode active:', isPreviewMode)
         
         // Load course and progress in parallel (skip progress in preview mode)
         const [foundCourse, progress] = await Promise.all([
@@ -87,13 +76,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           isPreviewMode ? Promise.resolve([]) : progressService.getUserProgress(user.id)
         ])
         
-        console.log('User side - Loading course data for ID:', params.id)
-        console.log('User side - Found course:', foundCourse)
-        console.log('User side - Course sections:', foundCourse?.sections)
-        console.log('User side - Loading progress:', progress.length, progress)
-        
         if (!foundCourse) {
-          console.error('Course not found for ID:', params.id)
           alert('Course not found. Please check the course ID.')
           return
         }
@@ -106,20 +89,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           const firstLesson = foundCourse.sections[0].lessons[0]
           setSelectedLesson(firstLesson.id)
           setCurrentLessonContent(firstLesson.content)
-          console.log('User side - Set first lesson:', firstLesson.title, 'Content:', firstLesson.content)
         } else if (foundCourse && selectedLesson) {
           // Update current lesson content if lesson is still selected
           for (const section of foundCourse.sections) {
             const lesson = section.lessons.find((l: any) => l.id === selectedLesson)
             if (lesson) {
-              console.log('User side - Updated lesson content:', lesson.title, 'New content:', lesson.content)
               setCurrentLessonContent(lesson.content)
               break
             }
           }
         }
       } catch (error) {
-        console.error('Error loading course:', error)
         setCourse({
           id: params.id,
           title: "Course Not Found",
@@ -135,9 +115,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     
     // Listen for custom course update events
     const handleCourseUpdate = (e: CustomEvent) => {
-      console.log('User side - Custom event triggered:', e.detail)
       if (e.detail.courseId === params.id) {
-        console.log('User side - Course update event matches current course, reloading...')
         loadCourseDataAndProgress()
       }
     }
@@ -234,8 +212,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
       for (const section of course.sections) {
         const lesson = section.lessons.find((l: any) => l.id === lessonId)
         if (lesson) {
-          console.log('Selected lesson:', lesson.title) // Debug log
-          console.log('Lesson content:', lesson.content) // Debug log
           setCurrentLessonContent(lesson.content)
           break
         }
@@ -246,7 +222,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const renderLessonContent = (content: string) => {
     if (!content) return <p className="text-gray-500">No content available for this lesson.</p>
     
-    console.log('User side - Original content:', content) // Debug log
     
     // Handle backward compatibility - convert all old formats to new embed format
     let processedContent = content
@@ -261,23 +236,91 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         // Otherwise keep as regular text
         return line
       }).join('\n')
-      console.log('User side - Migrated old content to new format:', processedContent) // Debug log
     }
     
-    console.log('User side - Final processed content:', processedContent) // Debug log
     
-    const lines = processedContent.split('\n')
-    const elements: JSX.Element[] = []
-    
-    lines.forEach((line, index) => {
-      console.log('Processing line:', line) // Debug log
+          const lines = processedContent.split('\n')
+      const elements: JSX.Element[] = []
       
-      // Handle different content types (including old formats for backward compatibility)
-      if (line.startsWith('/embed ')) {
-        const originalUrl = line.substring(7).trim()
-        console.log('Found /embed line, URL:', originalUrl) // Debug log
-        if (originalUrl) {
-          // Determine content type based on URL
+      lines.forEach((line, index) => {
+        
+        // Handle different content types (including old formats for backward compatibility)
+        if (line.startsWith('/embed ')) {
+          const originalUrl = line.substring(7).trim()
+          if (originalUrl) {
+            // Determine content type based on URL
+            let contentType = 'iframe'
+            let icon = Video
+            let label = 'Embedded Content'
+            let embedUrl = originalUrl
+            
+            if (originalUrl.includes('youtube.com') || originalUrl.includes('youtu.be')) {
+              contentType = 'video'
+              icon = Video
+              label = 'Video'
+              // Convert YouTube URL to embed format
+              const videoId = originalUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
+              if (videoId) {
+                embedUrl = `https://www.youtube.com/embed/${videoId}`
+              }
+            } else if (originalUrl.includes('vimeo.com')) {
+              contentType = 'video'
+              icon = Video
+              label = 'Video'
+              // Convert Vimeo URL to embed format
+              const videoId = originalUrl.match(/vimeo\.com\/(\d+)/)?.[1]
+              if (videoId) {
+                embedUrl = `https://player.vimeo.com/video/${videoId}`
+              }
+            } else if (originalUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+              contentType = 'image'
+              icon = Image
+              label = 'Image'
+            } else if (originalUrl.includes('typeform.com')) {
+              contentType = 'form'
+              icon = FormInput
+              label = 'Form'
+            
+            // Handle Typeform URLs with dynamic hidden fields
+            if (user && selectedLesson) {
+              // Extract form ID from URL
+              const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+              if (formIdMatch) {
+                const formId = formIdMatch[1]
+                // Generate dynamic Typeform URL with hidden fields
+                embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+              }
+            }
+            }
+            
+            const Icon = icon
+            elements.push(
+              <div key={index} className="mb-6">
+                <div className="bg-gray-50 rounded-lg p-4 mb-2">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Icon size={16} className="text-purple-500" />
+                    <span className="text-sm font-medium text-gray-700">{label}</span>
+                  </div>
+                  {contentType === 'image' ? (
+                    <img src={embedUrl} alt="Lesson content" className="w-full rounded-lg" />
+                  ) : (
+                    <iframe 
+                      src={embedUrl} 
+                      className="w-full h-96 rounded-lg"
+                      frameBorder="0"
+                      allowFullScreen
+                      title="Embedded content"
+                    />
+                  )}
+                </div>
+              </div>
+            )
+          }
+        } else if (line.startsWith('/https://') || line.startsWith('/http://')) {
+          // Handle URLs that were saved with extra slash
+          const originalUrl = line.substring(1).trim()
+          
+          // Convert to embed format
           let contentType = 'iframe'
           let icon = Video
           let label = 'Embedded Content'
@@ -309,18 +352,17 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             contentType = 'form'
             icon = FormInput
             label = 'Form'
-            
-            // Handle Typeform URLs with dynamic hidden fields
-            if (user && selectedLesson) {
-              // Extract form ID from URL
-              const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
-              if (formIdMatch) {
-                const formId = formIdMatch[1]
-                // Generate dynamic Typeform URL with hidden fields
-                embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
-                console.log('Generated Typeform URL with hidden fields:', embedUrl)
-              }
+          
+          // Handle Typeform URLs with dynamic hidden fields
+          if (user && selectedLesson) {
+            // Extract form ID from URL
+            const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+            if (formIdMatch) {
+              const formId = formIdMatch[1]
+              // Generate dynamic Typeform URL with hidden fields
+              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
             }
+          }
           }
           
           const Icon = icon
@@ -345,103 +387,28 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               </div>
             </div>
           )
-        }
-      } else if (line.startsWith('/https://') || line.startsWith('/http://')) {
-        // Handle URLs that were saved with extra slash
-        const originalUrl = line.substring(1).trim()
-        console.log('Processing URL with extra slash:', originalUrl)
-        
-        // Convert to embed format
-        let contentType = 'iframe'
-        let icon = Video
-        let label = 'Embedded Content'
-        let embedUrl = originalUrl
-        
-        if (originalUrl.includes('youtube.com') || originalUrl.includes('youtu.be')) {
-          contentType = 'video'
-          icon = Video
-          label = 'Video'
-          // Convert YouTube URL to embed format
-          const videoId = originalUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
-          if (videoId) {
-            embedUrl = `https://www.youtube.com/embed/${videoId}`
-          }
-        } else if (originalUrl.includes('vimeo.com')) {
-          contentType = 'video'
-          icon = Video
-          label = 'Video'
-          // Convert Vimeo URL to embed format
-          const videoId = originalUrl.match(/vimeo\.com\/(\d+)/)?.[1]
-          if (videoId) {
-            embedUrl = `https://player.vimeo.com/video/${videoId}`
-          }
-        } else if (originalUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-          contentType = 'image'
-          icon = Image
-          label = 'Image'
-        } else if (originalUrl.includes('typeform.com')) {
-          contentType = 'form'
-          icon = FormInput
-          label = 'Form'
-          
-          // Handle Typeform URLs with dynamic hidden fields
-          if (user && selectedLesson) {
-            // Extract form ID from URL
-            const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
-            if (formIdMatch) {
-              const formId = formIdMatch[1]
-              // Generate dynamic Typeform URL with hidden fields
-              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
-              console.log('Generated Typeform URL with hidden fields:', embedUrl)
-            }
-          }
-        }
-        
-        const Icon = icon
-        elements.push(
-          <div key={index} className="mb-6">
-            <div className="bg-gray-50 rounded-lg p-4 mb-2">
-              <div className="flex items-center space-x-2 mb-2">
-                <Icon size={16} className="text-purple-500" />
-                <span className="text-sm font-medium text-gray-700">{label}</span>
-              </div>
-              {contentType === 'image' ? (
-                <img src={embedUrl} alt="Lesson content" className="w-full rounded-lg" />
-                ) : (
-                <iframe 
-                  src={embedUrl} 
-                  className="w-full h-96 rounded-lg"
-                  frameBorder="0"
-                  allowFullScreen
-                  title="Embedded content"
-                />
-              )}
-            </div>
-          </div>
-        )
-      } else if (line.trim()) {
-        // Handle regular text content with formatting
-        const formattedText = line
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-          .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-          .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
-          .replace(/^# (.*)/, '<h1 class="text-2xl font-bold text-gray-900 mb-3">$1</h1>') // H1
-          .replace(/^## (.*)/, '<h2 class="text-xl font-bold text-gray-900 mb-2">$1</h2>') // H2
-          .replace(/^### (.*)/, '<h3 class="text-lg font-bold text-gray-900 mb-2">$1</h3>') // H3
+        } else if (line.trim()) {
+          // Handle regular text content with formatting
+          const formattedText = line
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+            .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
+            .replace(/^# (.*)/, '<h1 class="text-2xl font-bold text-gray-900 mb-3">$1</h1>') // H1
+            .replace(/^## (.*)/, '<h2 class="text-xl font-bold text-gray-900 mb-2">$1</h2>') // H2
+            .replace(/^### (.*)/, '<h3 class="text-lg font-bold text-gray-900 mb-2">$1</h3>') // H3
           .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>') // Hyperlinks [text](url)
-        
-        elements.push(
-          <div key={index} className="mb-4">
-            <div 
-              className="text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formattedText }}
-            />
-          </div>
-        )
-      }
+          
+          elements.push(
+            <div key={index} className="mb-4">
+              <div 
+                className="text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formattedText }}
+              />
+            </div>
+          )
+        }
     })
     
-    console.log('Generated elements:', elements.length) // Debug log
     return elements.length > 0 ? elements : <p className="text-gray-500">No content available for this lesson.</p>
   }
 
@@ -457,57 +424,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     window.location.href = '/'
   }
 
-  // Function to clear all cached data (for testing)
-  const clearAllCache = () => {
-    localStorage.clear()
-    window.location.reload()
-  }
-
-  // Add function to refresh course data
-  const refreshCourseData = () => {
-    console.log('Refreshing course data...')
-    localStorage.removeItem('courseData')
-    localStorage.removeItem('userProgress')
-    
-    // Force cache refresh by adding timestamp
-    const timestamp = new Date().getTime()
-    window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + '_t=' + timestamp
-  }
-
-  // Function to clear progress for current user
-  const clearUserProgress = async () => {
-    if (!user) return
-    
-    try {
-      // Clear from database
-      const { error } = await supabase
-        .from('user_progress')
-        .delete()
-        .eq('user_id', user.id)
-      
-      if (error) {
-        console.error('Error clearing progress:', error)
-        alert('Error clearing progress. Please try again.')
-        return
-      }
-      
-      // Clear from local state
-      setUserProgress([])
-      
-      // Clear cache
-      localStorage.removeItem('userProgress')
-      localStorage.removeItem('courseData')
-      
-      console.log('Progress cleared for user:', user.id)
-      alert('Progress cleared successfully!')
-      
-      // Refresh the page
-      window.location.reload()
-    } catch (error) {
-      console.error('Error clearing progress:', error)
-      alert('Error clearing progress. Please try again.')
-    }
-  }
 
   const handleMarkLessonCompleted = async (lessonId: string, completed: boolean) => {
     if (!user) return
@@ -555,15 +471,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         try {
           const freshProgress = await progressService.getUserProgress(user.id)
           setUserProgress(freshProgress)
-          console.log('Refreshed progress after lesson completion:', freshProgress)
         } catch (error) {
-          console.error('Error refreshing progress:', error)
         }
       }, 1000)
 
       // If lesson was completed, automatically select the next lesson in the same section
       if (completed) {
-        console.log('Lesson completed, attempting auto-advance...')
         
         // Find the current section and lesson index
         let currentSectionIndex = -1
@@ -575,10 +488,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           if (lessonIndex !== -1) {
             currentSectionIndex = i
             currentLessonIndex = lessonIndex
-            console.log('Found lesson at section', i, 'lesson', lessonIndex)
-            break
+              break
+            }
           }
-        }
         
         // Find the next lesson in the same section
         if (currentSectionIndex !== -1 && currentLessonIndex !== -1) {
@@ -588,17 +500,14 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           if (nextLessonIndex < currentSection.lessons.length) {
             // Next lesson in same section
             const nextLesson = currentSection.lessons[nextLessonIndex]
-            console.log('Auto-advancing to next lesson in same section:', nextLesson.title)
             setSelectedLesson(nextLesson.id)
             setCurrentLessonContent(nextLesson.content)
           } else {
             // End of section, find next section with lessons
-            console.log('End of section, looking for next section...')
             for (let i = currentSectionIndex + 1; i < course.sections.length; i++) {
               const nextSection = course.sections[i]
               if (nextSection.lessons.length > 0) {
                 const firstLesson = nextSection.lessons[0]
-                console.log('Auto-advancing to first lesson of next section:', firstLesson.title)
                 setSelectedLesson(firstLesson.id)
                 setCurrentLessonContent(firstLesson.content)
                 break
@@ -606,11 +515,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             }
           }
         } else {
-          console.log('Could not find current lesson for auto-advance')
         }
       }
     } catch (error) {
-      console.error('Error marking lesson as completed:', error)
     }
   }
 
@@ -620,16 +527,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     
     // In preview mode, skip progress refresh since we don't have a real user
     if (isPreviewMode) {
-      console.log('Preview mode - skipping progress refresh')
       return
     }
     
     try {
       const progress = await progressService.getUserProgress(user.id)
       setUserProgress(progress)
-      console.log('Refreshed user progress:', progress)
     } catch (error) {
-      console.error('Error refreshing user progress:', error)
     }
   }
 
@@ -653,36 +557,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <span>Progress: {completedCount}/{totalLessons}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={clearUserProgress}
-                  className="flex items-center space-x-2 text-red-500 hover:text-red-700 transition-colors text-xs"
-                  title="Clear progress for current user"
-                >
-                  <span>Clear Progress</span>
-                </button>
-                <button
-                  onClick={clearAllCache}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors text-xs"
-                  title="Clear cache for testing"
-                >
-                  <span>Clear Cache</span>
-                </button>
-                <button
-                  onClick={refreshCourseData}
-                  className="flex items-center space-x-2 text-blue-500 hover:text-blue-700 transition-colors text-xs"
-                  title="Refresh course data from server"
-                >
-                  <span>Refresh Course</span>
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <LogOut size={20} />
-                  <span className="text-sm">Sign Out</span>
-                </button>
-              </div>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <LogOut size={20} />
+                <span className="text-sm">Sign Out</span>
+              </button>
             </div>
           </div>
         </div>
@@ -753,7 +634,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                 return newSet
                               })
                               alert('Lesson completed successfully! (Preview Mode)')
-                              console.log('Preview mode - lesson completed:', selectedLesson)
                             } else {
                               // Check if lesson can be completed (considering typeform requirements)
                               const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
@@ -774,7 +654,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                               }
                             }
                           } catch (error) {
-                            console.error('Error completing lesson:', error)
                             alert('There was an error completing the lesson. Please try again.')
                           } finally {
                             // Re-enable button after a delay
@@ -1042,7 +921,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                   return newSet
                                 })
                                 alert('Lesson completed successfully! (Preview Mode)')
-                                console.log('Preview mode - lesson completed:', selectedLesson)
                               } else {
                                 // Check if lesson can be completed (considering typeform requirements)
                                 const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)

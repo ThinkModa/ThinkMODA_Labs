@@ -29,31 +29,23 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAuth = () => {
       const userData = localStorage.getItem('user')
-      console.log('Admin Dashboard - Checking auth, userData:', userData)
       
       if (!userData) {
-        console.log('Admin Dashboard - No user data found, redirecting to sign-in')
         window.location.href = '/'
         return
       }
 
       try {
         const user = JSON.parse(userData)
-        console.log('Admin Dashboard - User data parsed:', user)
-        console.log('Admin Dashboard - User email:', user.email)
-        console.log('Admin Dashboard - User role:', user.role)
         
         // Check if user is admin
         if (user.role !== 'ADMIN') {
-          console.log('Admin Dashboard - User is not admin, redirecting to user dashboard')
           window.location.href = '/user'
           return
         }
         
-        console.log('Admin Dashboard - Admin user authenticated:', user)
         setUser(user)
       } catch (error) {
-        console.error('Admin Dashboard - Error parsing user data:', error)
         localStorage.removeItem('user')
         window.location.href = '/'
       } finally {
@@ -100,7 +92,6 @@ export default function AdminDashboard() {
       description: 'Assign courses to users',
       icon: CheckCircle,
       color: 'bg-yellow-500',
-      onClick: () => console.log('Course Assignments clicked')
     },
     {
       id: 'analytics',
@@ -108,7 +99,6 @@ export default function AdminDashboard() {
       description: 'View learning analytics and reports',
       icon: TrendingUp,
       color: 'bg-purple-500',
-      onClick: () => console.log('Analytics clicked')
     }
   ]
 

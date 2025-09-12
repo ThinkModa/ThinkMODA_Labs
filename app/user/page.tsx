@@ -16,20 +16,16 @@ export default function UserLandingPage() {
   useEffect(() => {
     const checkAuth = () => {
       const userData = localStorage.getItem('user')
-      console.log('User page - Checking auth, userData:', userData)
       
       if (!userData) {
-        console.log('User page - No user data found, redirecting to sign-in')
         window.location.href = '/'
         return
       }
 
       try {
         const user = JSON.parse(userData)
-        console.log('User page - User data parsed successfully:', user)
         setUser(user)
       } catch (error) {
-        console.error('Error parsing user data:', error)
         localStorage.removeItem('user')
         setIsLoading(false)
         window.location.href = '/'
@@ -41,7 +37,6 @@ export default function UserLandingPage() {
     // Fallback timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (isLoading) {
-        console.log('User page - Loading timeout, setting loading to false')
         setIsLoading(false)
       }
     }, 5000) // 5 second timeout
@@ -63,16 +58,12 @@ export default function UserLandingPage() {
           progressService.getUserProgress(user.id)
         ])
         
-        console.log('User side - Loading courses from Supabase:', courses.length, courses)
-        console.log('User side - Course IDs:', courses.map(c => ({ id: c.id, title: c.title })))
-        console.log('User side - Loading progress:', progress.length, progress)
         
         setUserProgress(progress)
         
         if (courses.length > 0) {
           // Filter to only show public courses
           const openCourses = courses.filter((course: any) => course.visibility === 'public')
-          console.log('User side - Open courses:', openCourses.length, openCourses.map(c => ({ id: c.id, title: c.title })))
           
           const formattedCourses = openCourses.map((course: any) => {
             const courseProgress = progressService.calculateCourseProgress(course, progress)
@@ -89,14 +80,11 @@ export default function UserLandingPage() {
               completedLessons: progress.filter((p: any) => p.completed).length
             }
           })
-          console.log('User side - Formatted courses with progress:', formattedCourses)
           setAssignedCourses(formattedCourses)
         } else {
-          console.log('User side - No courses found in Supabase')
           setAssignedCourses([]) // Clear default courses if none found
         }
       } catch (error) {
-        console.error('Error loading courses and progress:', error)
         setAssignedCourses([]) // Clear on error
       } finally {
         setIsLoading(false)
@@ -114,8 +102,6 @@ export default function UserLandingPage() {
   // Debug function to check localStorage
   const debugLocalStorage = () => {
     const courses = localStorage.getItem('courses')
-    console.log('Debug - localStorage courses:', courses)
-    console.log('Debug - Parsed courses:', JSON.parse(courses || '[]'))
   }
 
   if (isLoading || !user) {

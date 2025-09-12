@@ -57,7 +57,6 @@ export default function CourseBuilderPage() {
         const courses = await courseService.getAllCourses()
         setCourses(courses)
       } catch (error: any) {
-        console.error('Error loading courses:', error)
         setCourses([])
       }
     }
@@ -82,7 +81,6 @@ export default function CourseBuilderPage() {
           visibility: newCourse.visibility
         })
         
-        console.log('New course created via API:', course.title)
         
         // Update local state with course that has empty sections array
         const courseWithSections: CourseWithSections = {
@@ -98,7 +96,6 @@ export default function CourseBuilderPage() {
           detail: { courseId: course.id } 
         }))
       } catch (error) {
-        console.error('Error creating course:', error)
         alert('Failed to create course. Please try again.')
       }
     }
@@ -109,9 +106,6 @@ export default function CourseBuilderPage() {
   }
 
   const handleSaveSection = async () => {
-    console.log('handleSaveSection called')
-    console.log('newSection:', newSection)
-    console.log('selectedCourse:', selectedCourse)
     
     if (!newSection.title) {
       alert('Please enter a section title')
@@ -124,14 +118,12 @@ export default function CourseBuilderPage() {
     }
     
     try {
-      console.log('Creating section for course:', selectedCourse.id)
       const section = await courseService.createSection({
         title: newSection.title,
         description: newSection.description,
         courseId: selectedCourse.id
       })
       
-      console.log('Section created successfully:', section)
       
       // Add lessons array to the new section
       const sectionWithLessons = {
@@ -154,9 +146,7 @@ export default function CourseBuilderPage() {
         detail: { courseId: selectedCourse.id } 
       }))
       
-      console.log('New section created via API:', section.title)
     } catch (error) {
-      console.error('Error creating section:', error)
       alert(`Failed to create section: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -189,8 +179,6 @@ export default function CourseBuilderPage() {
           sectionId: targetSectionId
         })
         
-        console.log('Saving lesson via API:', lesson.title)
-        console.log('Lesson content:', lesson.content)
         
         // Add lesson to the selected section
         // Ensure all sections have lessons array
@@ -226,7 +214,6 @@ export default function CourseBuilderPage() {
         setIsCreatingLesson(false)
         setSelectedSectionId(null)
       } catch (error) {
-        console.error('Error creating lesson:', error)
         alert('Failed to create lesson. Please try again.')
       }
     }
@@ -257,18 +244,15 @@ export default function CourseBuilderPage() {
         // Otherwise keep as regular text
         return line
       }).join('\n')
-      console.log('Converted old content for editing:', editableContent) // Debug log
     }
     
     // Load existing content into the editor
     setContent(editableContent)
-    console.log('Loading lesson content for editing:', editableContent) // Debug log
   }
 
   const handleSaveLessonEdit = async () => {
     if (editingLesson && selectedCourse) {
       try {
-        console.log('Saving lesson edit with content:', content)
         
         const updatedLesson = await courseService.updateLesson(editingLesson.id, {
           title: newLesson.title,
@@ -297,12 +281,10 @@ export default function CourseBuilderPage() {
         setContent('')
         
         // Trigger real-time update for user side
-        console.log('Admin side - Dispatching coursesUpdated event for course:', selectedCourse.id)
         window.dispatchEvent(new CustomEvent('coursesUpdated', { 
           detail: { courseId: selectedCourse.id } 
         }))
       } catch (error) {
-        console.error('Error updating lesson:', error)
         alert('Failed to update lesson. Please try again.')
       }
     }
@@ -334,9 +316,7 @@ export default function CourseBuilderPage() {
           }))
         }
         
-        console.log('Lesson deleted successfully')
       } catch (error) {
-        console.error('Error deleting lesson:', error)
         alert('Failed to delete lesson. Please try again.')
       }
     }
@@ -365,9 +345,7 @@ export default function CourseBuilderPage() {
           }))
         }
         
-        console.log('Section deleted successfully')
       } catch (error) {
-        console.error('Error deleting section:', error)
         alert('Failed to delete section. Please try again.')
       }
     }
@@ -480,7 +458,6 @@ export default function CourseBuilderPage() {
           setEmbedPreview('iframe')
         }
       } catch (error) {
-        console.error('Error processing URL:', error)
         setEmbedPreview('iframe') // Fallback to iframe
       }
     } else {
@@ -502,7 +479,6 @@ export default function CourseBuilderPage() {
       lines[currentLineIndex] = newLine
       
       const newContent = lines.join('\n') + '\n' + afterCursor
-      console.log('Admin side - Saving embed content:', newContent)
       setContent(newContent)
       setShowEmbedInput(false)
       setEmbedUrl('')
@@ -532,7 +508,6 @@ export default function CourseBuilderPage() {
   const formatText = (format: 'bold' | 'italic' | 'underline' | 'h1' | 'h2' | 'h3' | 'link' | 'regular') => {
     const textarea = textareaRef.current
     if (!textarea) {
-      console.log('Textarea not found')
       return
     }
 
@@ -541,7 +516,6 @@ export default function CourseBuilderPage() {
     const end = textarea.selectionEnd
     const selectedContent = content.substring(start, end)
     
-    console.log('Formatting text:', { format, start, end, selectedContent })
     
 
     
@@ -648,8 +622,6 @@ export default function CourseBuilderPage() {
     setIsSaving(true)
     
     try {
-      console.log('Saving course to localStorage:', selectedCourse.title) // Debug log
-      console.log('Course sections:', selectedCourse.sections.length) // Debug log
       
       // Save to localStorage for now (in future, this will be Supabase)
       const savedCourses = JSON.parse(localStorage.getItem('courses') || '[]')
@@ -662,7 +634,6 @@ export default function CourseBuilderPage() {
       }
       
       localStorage.setItem('courses', JSON.stringify(savedCourses))
-      console.log('Saved courses to localStorage:', savedCourses.length) // Debug log
       
       // Update local state
       setCourses(courses.map(c => c.id === selectedCourse.id ? selectedCourse : c))
@@ -676,7 +647,6 @@ export default function CourseBuilderPage() {
       alert('Course saved successfully! Users can now access this course.')
       
     } catch (error) {
-      console.error('Error saving course:', error)
       alert('Error saving course. Please try again.')
     } finally {
       setIsSaving(false)
@@ -704,21 +674,15 @@ export default function CourseBuilderPage() {
         detail: { courseId: courseId, action: 'deleted' } 
       }))
       
-      console.log('Course deleted via API:', courseId)
     } catch (error) {
-      console.error('Error deleting course:', error)
       alert('Failed to delete course. Please try again.')
     }
   }
 
   const handlePreviewCourse = (course: CourseWithSections) => {
     // Open course preview in a new tab with preview mode
-    console.log('Previewing course:', course)
-    console.log('Course ID:', course.id)
-    console.log('Course title:', course.title)
     
     const previewUrl = `/user/course/${course.id}?preview=true&admin=true`
-    console.log('Preview URL:', previewUrl)
     
     window.open(previewUrl, '_blank')
   }
@@ -906,7 +870,6 @@ export default function CourseBuilderPage() {
                               detail: { courseId: selectedCourse.id } 
                             }))
                           } catch (error) {
-                            console.error('Error updating course visibility:', error)
                             alert('Failed to update course visibility. Please try again.')
                           }
                         }}
@@ -935,7 +898,6 @@ export default function CourseBuilderPage() {
                               detail: { courseId: selectedCourse.id } 
                             }))
                           } catch (error) {
-                            console.error('Error updating course visibility:', error)
                             alert('Failed to update course visibility. Please try again.')
                           }
                         }}
@@ -1445,7 +1407,6 @@ Type / to add embedded content"
               <div className="flex space-x-3">
                 <button
                   onClick={() => {
-                    console.log('Saving content:', content) // Debug log
                     const updatedLesson = { ...newLesson, content: content }
                     setNewLesson(updatedLesson)
                     
