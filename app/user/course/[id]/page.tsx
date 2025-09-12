@@ -83,6 +83,15 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         
         console.log('Course loaded:', foundCourse)
         console.log('Course sections:', foundCourse?.sections)
+        
+        // Ensure course has proper structure
+        if (foundCourse.sections) {
+          foundCourse.sections = foundCourse.sections.map((section: any) => ({
+            ...section,
+            lessons: section.lessons || []
+          }))
+        }
+        
         setCourse(foundCourse)
         setUserProgress(progress)
         
