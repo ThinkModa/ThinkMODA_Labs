@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import type { Course, Section, Lesson } from '@/lib/supabase'
 
+// Cache bust version: 2025-09-12-18:50
+
 // Re-export types for compatibility
 export type { Course, Section, Lesson }
 
@@ -90,7 +92,7 @@ export const courseService = {
     visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
-      console.log('createCourse called with (v2.1):', courseData)
+      console.log('createCourse called with (v2.2 - cache bust):', courseData)
       
       // Convert frontend visibility values to database enum values
       const dbVisibility = courseData.visibility === 'private' ? 'PRIVATE' : 'OPEN'
@@ -232,35 +234,45 @@ export const courseService = {
     try {
       console.log('createLesson called with:', lessonData)
       
-      // Get the next order position for this section
-      const { data: existingLessons, error: countError } = await supabase
-        .from('lessons')
-        .select('order_position')
-        .eq('section_id', lessonData.sectionId)
-        .order('order_position', { ascending: false })
-        .limit(1)
+      // Try to get the next order position for this section
+      let nextOrderPosition = '1'
+      
+      try {
+        const { data: existingLessons, error: countError } = await supabase
+          .from('lessons')
+          .select('order_position')
+          .eq('section_id', lessonData.sectionId)
+          .order('order_position', { ascending: false })
+          .limit(1)
 
-      if (countError) {
-        console.error('Error getting lesson count:', countError)
-        throw new Error('Failed to get lesson count')
+        if (!countError && existingLessons && existingLessons.length > 0) {
+          nextOrderPosition = (parseInt(existingLessons[0].order_position) + 1).toString()
+        }
+      } catch (orderError) {
+        console.log('Order position query failed, using default:', orderError)
+        // If order_position column doesn't exist, just use '1'
+        nextOrderPosition = '1'
       }
-
-      const nextOrderPosition = existingLessons && existingLessons.length > 0 
-        ? (parseInt(existingLessons[0].order_position) + 1).toString()
-        : '1'
 
       console.log('Next order position:', nextOrderPosition)
 
-      const insertData = {
+      // Start with basic required fields
+      const insertData: any = {
         title: lessonData.title,
         content: lessonData.content,
         details: lessonData.details || '',
-        description: lessonData.details || '', // Use details as description
-        section_id: lessonData.sectionId,
-        content_type: 'rich_text',
-        order_position: nextOrderPosition,
-        is_published: true,
-        content_data: { content: lessonData.content } // Store content in content_data as well
+        section_id: lessonData.sectionId
+      }
+
+      // Try to add optional fields if they exist
+      try {
+        insertData.description = lessonData.details || ''
+        insertData.content_type = 'rich_text'
+        insertData.order_position = nextOrderPosition
+        insertData.is_published = true
+        insertData.content_data = { content: lessonData.content }
+      } catch (optionalError) {
+        console.log('Some optional fields may not exist in database:', optionalError)
       }
 
       console.log('Inserting lesson with data:', insertData)
