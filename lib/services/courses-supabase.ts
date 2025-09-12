@@ -90,12 +90,15 @@ export const courseService = {
     visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
+      // Convert frontend visibility values to database enum values
+      const dbVisibility = courseData.visibility === 'private' ? 'PRIVATE' : 'OPEN'
+      
       const { data: course, error } = await supabase
         .from('courses')
         .insert({
           title: courseData.title,
           description: courseData.description || '',
-          visibility: courseData.visibility || 'public'
+          visibility: dbVisibility
         })
         .select()
         .single()
@@ -119,12 +122,16 @@ export const courseService = {
     visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
+      // Convert frontend visibility values to database enum values
+      const updateData: any = { ...updates }
+      if (updates.visibility !== undefined) {
+        updateData.visibility = updates.visibility === 'private' ? 'PRIVATE' : 'OPEN'
+      }
+      updateData.updated_at = new Date().toISOString()
+      
       const { data: course, error } = await supabase
         .from('courses')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single()

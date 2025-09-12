@@ -30,7 +30,7 @@ export interface Course {
   id: string
   title: string
   description: string | null
-  visibility: 'public' | 'private'
+  visibility: 'OPEN' | 'PRIVATE'
   created_at: string
   updated_at: string
 }

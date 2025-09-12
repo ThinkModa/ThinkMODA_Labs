@@ -93,8 +93,7 @@ export default function SignInPage() {
   }
 
   return (
-
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-md w-full space-y-8 p-8">
         {/* Header */}
         <div className="text-center">
@@ -293,5 +292,6 @@ export default function SignInPage() {
         </div>
         </div>
       </div>
+    </div>
   )
 } 
