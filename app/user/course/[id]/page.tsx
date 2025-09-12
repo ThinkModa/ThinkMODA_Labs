@@ -21,6 +21,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const [user, setUser] = useState<any>(null)
   const [userProgress, setUserProgress] = useState<UserProgress[]>([])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  const [previewProgress, setPreviewProgress] = useState<Set<string>>(new Set()) // For preview mode
   
   // Preview mode detection
   const isPreviewMode = searchParams.get('preview') === 'true'
@@ -190,6 +191,10 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
   // Helper functions for progression system
   const isLessonCompleted = (lessonId: string) => {
+    // In preview mode, use local preview progress
+    if (isPreviewMode) {
+      return previewProgress.has(lessonId)
+    }
     return userProgress.some(p => p.lesson_id === lessonId && p.completed)
   }
 
@@ -613,6 +618,12 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const refreshUserProgress = async () => {
     if (!user) return
     
+    // In preview mode, skip progress refresh since we don't have a real user
+    if (isPreviewMode) {
+      console.log('Preview mode - skipping progress refresh')
+      return
+    }
+    
     try {
       const progress = await progressService.getUserProgress(user.id)
       setUserProgress(progress)
@@ -735,9 +746,10 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             
                             // In preview mode, always allow completion
                             if (isPreviewMode) {
-                              await handleMarkLessonCompleted(selectedLesson, true)
+                              // Update local preview progress
+                              setPreviewProgress(prev => new Set([...prev, selectedLesson]))
                               alert('Lesson completed successfully! (Preview Mode)')
-                              await refreshUserProgress()
+                              console.log('Preview mode - lesson completed:', selectedLesson)
                             } else {
                               // Check if lesson can be completed (considering typeform requirements)
                               const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
@@ -1019,14 +1031,21 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                             onClick={async () => {
                               // In preview mode, always allow completion
                               if (isPreviewMode) {
-                                handleMarkLessonCompleted(selectedLesson, true)
+                                // Update local preview progress
+                                setPreviewProgress(prev => new Set([...prev, selectedLesson]))
                                 alert('Lesson completed successfully! (Preview Mode)')
+                                console.log('Preview mode - lesson completed:', selectedLesson)
                               } else {
                                 // Check if lesson can be completed (considering typeform requirements)
                                 const canComplete = await progressService.canCompleteLesson(user.id, selectedLesson, currentLessonContent)
                                 
                                 if (canComplete) {
-                                  handleMarkLessonCompleted(selectedLesson, true)
+                                  await handleMarkLessonCompleted(selectedLesson, true)
+                                  alert('Lesson completed successfully! Auto-advancing to next lesson...')
+                                  // Auto-refresh the page after successful completion
+                                  setTimeout(() => {
+                                    window.location.reload()
+                                  }, 1000)
                                 } else {
                                   // Show message that typeform needs to be completed
                                   alert('Please complete the embedded form before marking this lesson as complete.')
