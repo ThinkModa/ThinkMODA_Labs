@@ -214,13 +214,35 @@ export const courseService = {
     sectionId: string
   }): Promise<Lesson> {
     try {
+      // Get the next order position for this section
+      const { data: existingLessons, error: countError } = await supabase
+        .from('lessons')
+        .select('order_position')
+        .eq('section_id', lessonData.sectionId)
+        .order('order_position', { ascending: false })
+        .limit(1)
+
+      if (countError) {
+        console.error('Error getting lesson count:', countError)
+        throw new Error('Failed to get lesson count')
+      }
+
+      const nextOrderPosition = existingLessons && existingLessons.length > 0 
+        ? (parseInt(existingLessons[0].order_position) + 1).toString()
+        : '1'
+
       const { data: lesson, error } = await supabase
         .from('lessons')
         .insert({
           title: lessonData.title,
           content: lessonData.content,
           details: lessonData.details || '',
-          section_id: lessonData.sectionId
+          description: lessonData.details || '', // Use details as description
+          section_id: lessonData.sectionId,
+          content_type: 'rich_text',
+          order_position: nextOrderPosition,
+          is_published: true,
+          content_data: { content: lessonData.content } // Store content in content_data as well
         })
         .select()
         .single()
