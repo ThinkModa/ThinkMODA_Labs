@@ -182,7 +182,7 @@ export default function CourseBuilderPage() {
         
         // Add lesson to the selected section
         // Ensure all sections have lessons array
-        const updatedSections = selectedCourse.sections.map((section) => {
+        const updatedSections = selectedCourse.sections ? selectedCourse.sections.map((section) => {
           const sectionWithLessons = {
             ...section,
             lessons: section.lessons || []
@@ -195,7 +195,7 @@ export default function CourseBuilderPage() {
             }
           }
           return sectionWithLessons
-        })
+        }) : []
         
         const updatedCourse = {
           ...selectedCourse,
@@ -260,14 +260,14 @@ export default function CourseBuilderPage() {
           details: newLesson.details
         })
         
-        const updatedSections = selectedCourse.sections.map(section => ({
+        const updatedSections = selectedCourse.sections ? selectedCourse.sections.map(section => ({
           ...section,
           lessons: section.lessons.map(lesson => 
             lesson.id === editingLesson.id 
               ? updatedLesson
               : lesson
           )
-        }))
+        })) : []
         
         const updatedCourse = {
           ...selectedCourse,
@@ -298,10 +298,10 @@ export default function CourseBuilderPage() {
         
         // Update local state
         if (selectedCourse) {
-          const updatedSections = selectedCourse.sections.map(section => ({
+          const updatedSections = selectedCourse.sections ? selectedCourse.sections.map(section => ({
             ...section,
             lessons: section.lessons.filter(lesson => lesson.id !== lessonId)
-          }))
+          })) : []
           
           const updatedCourse = {
             ...selectedCourse,
@@ -923,7 +923,7 @@ export default function CourseBuilderPage() {
                 </button>
               </div>
 
-              {selectedCourse.sections.map((section, sectionIndex) => (
+              {selectedCourse.sections && selectedCourse.sections.length > 0 ? selectedCourse.sections.map((section, sectionIndex) => (
                 <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -983,7 +983,11 @@ export default function CourseBuilderPage() {
                     <span>Add Lesson</span>
                   </button>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No sections available for this course yet.</p>
+                </div>
+              )}
             </div>
           </div>
         )}
