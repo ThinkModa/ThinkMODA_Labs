@@ -87,7 +87,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         setUserProgress(progress)
         
         // Set first lesson as selected by default if no lesson is currently selected
-        if (foundCourse && foundCourse.sections && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons.length > 0) {
+        if (foundCourse && foundCourse.sections && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons && foundCourse.sections[0].lessons.length > 0) {
           const firstLesson = foundCourse.sections[0].lessons[0]
           setSelectedLesson(firstLesson.id)
           setCurrentLessonContent(firstLesson.content)
