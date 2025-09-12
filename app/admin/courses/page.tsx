@@ -854,7 +854,7 @@ export default function CourseBuilderPage() {
                         type="radio"
                         name={`visibility-${selectedCourse.id}`}
                         value="public"
-                        checked={selectedCourse.visibility === 'public'}
+                        checked={selectedCourse.visibility === 'OPEN'}
                         onChange={async (e) => {
                           const newVisibility = e.target.value as 'public' | 'private'
                           try {
@@ -882,7 +882,7 @@ export default function CourseBuilderPage() {
                         type="radio"
                         name={`visibility-${selectedCourse.id}`}
                         value="private"
-                        checked={selectedCourse.visibility === 'private'}
+                        checked={selectedCourse.visibility === 'PRIVATE'}
                         onChange={async (e) => {
                           const newVisibility = e.target.value as 'public' | 'private'
                           try {
