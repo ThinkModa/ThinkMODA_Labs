@@ -94,7 +94,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         } else if (foundCourse && foundCourse.sections && selectedLesson) {
           // Update current lesson content if lesson is still selected
           for (const section of foundCourse.sections) {
-            const lesson = section.lessons.find((l: any) => l.id === selectedLesson)
+            const lesson = section.lessons ? section.lessons.find((l: any) => l.id === selectedLesson) : null
             if (lesson) {
               setCurrentLessonContent(lesson.content)
               break
@@ -165,8 +165,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     )
   }
 
-  const totalLessons = course.sections.reduce((acc: number, section: any) => acc + section.lessons.length, 0)
-  const completedCount = userProgress.filter(p => p.completed && course.sections.some((s: any) => s.lessons.some((l: any) => l.id === p.lesson_id))).length
+  const totalLessons = course.sections.reduce((acc: number, section: any) => acc + (section.lessons ? section.lessons.length : 0), 0)
+  const completedCount = userProgress.filter(p => p.completed && course.sections.some((s: any) => s.lessons && s.lessons.some((l: any) => l.id === p.lesson_id))).length
   const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0
 
   // Helper functions for progression system
@@ -179,14 +179,16 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   }
 
   const isSectionCompleted = (section: any) => {
-    return section.lessons.every((lesson: any) => isLessonCompleted(lesson.id))
+    return section.lessons ? section.lessons.every((lesson: any) => isLessonCompleted(lesson.id)) : false
   }
 
   const getNextUnlockedLesson = () => {
     for (const section of course.sections) {
-      for (const lesson of section.lessons) {
-        if (!isLessonCompleted(lesson.id)) {
-          return lesson.id
+      if (section.lessons) {
+        for (const lesson of section.lessons) {
+          if (!isLessonCompleted(lesson.id)) {
+            return lesson.id
+          }
         }
       }
     }
@@ -212,7 +214,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     // Find the lesson content
     if (course) {
       for (const section of course.sections) {
-        const lesson = section.lessons.find((l: any) => l.id === lessonId)
+        const lesson = section.lessons ? section.lessons.find((l: any) => l.id === lessonId) : null
         if (lesson) {
           setCurrentLessonContent(lesson.content)
           break
@@ -486,7 +488,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         
         for (let i = 0; i < course.sections.length; i++) {
           const section = course.sections[i]
-          const lessonIndex = section.lessons.findIndex((l: any) => l.id === lessonId)
+          const lessonIndex = section.lessons ? section.lessons.findIndex((l: any) => l.id === lessonId) : -1
           if (lessonIndex !== -1) {
             currentSectionIndex = i
             currentLessonIndex = lessonIndex
@@ -694,8 +696,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               const isSectionUnlockedState = isSectionUnlocked(sectionIndex)
               const isSectionCompletedState = isSectionCompleted(section)
               const isExpanded = expandedSections.has(section.id)
-              const sectionProgress = section.lessons.filter((lesson: any) => isLessonCompleted(lesson.id)).length
-              const sectionTotal = section.lessons.length
+              const sectionProgress = section.lessons ? section.lessons.filter((lesson: any) => isLessonCompleted(lesson.id)).length : 0
+              const sectionTotal = section.lessons ? section.lessons.length : 0
               
               return (
                 <div key={section.id} className={`mb-4 ${!isSectionUnlockedState ? 'opacity-50' : ''}`}>
@@ -734,7 +736,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   {isExpanded && (
                     <div className="mt-2 bg-white rounded-lg border border-gray-200 overflow-hidden">
                       <div className="p-4 space-y-2">
-                        {section.lessons.map((lesson: any) => {
+                        {section.lessons ? section.lessons.map((lesson: any) => {
                           const isCompleted = isLessonCompleted(lesson.id)
                           const isUnlocked = isLessonUnlocked(lesson.id)
                           const isSelected = selectedLesson === lesson.id
@@ -772,7 +774,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                               </div>
                             </button>
                           )
-                        })}
+                        }) : (
+                          <div className="text-center py-4">
+                            <p className="text-gray-500">No lessons available in this section.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -834,7 +840,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                       </h3>
                     </div>
                     <div className="space-y-2">
-                      {section.lessons.map((lesson: any) => {
+                      {section.lessons ? section.lessons.map((lesson: any) => {
                         const isCompleted = isLessonCompleted(lesson.id)
                         const isUnlocked = isLessonUnlocked(lesson.id)
                         const isSelected = selectedLesson === lesson.id
@@ -878,7 +884,11 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
 
                           </div>
                         )
-                      })}
+                      }) : (
+                        <div className="text-center py-4">
+                          <p className="text-gray-500">No lessons available in this section.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
@@ -897,10 +907,10 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   <div>
                     <div className="mb-6">
                       <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        {course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)?.title}
+                        {course.sections.flatMap((s: any) => s.lessons || []).find((l: any) => l.id === selectedLesson)?.title}
                       </h2>
                       <p className="text-gray-600">
-                        {course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)?.details}
+                        {course.sections.flatMap((s: any) => s.lessons || []).find((l: any) => l.id === selectedLesson)?.details}
                       </p>
                     </div>
                     
