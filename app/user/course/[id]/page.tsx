@@ -424,6 +424,53 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     window.location.href = '/'
   }
 
+  // Function to clear all cached data (for testing)
+  const clearAllCache = () => {
+    localStorage.clear()
+    window.location.reload()
+  }
+
+  // Add function to refresh course data
+  const refreshCourseData = () => {
+    localStorage.removeItem('courseData')
+    localStorage.removeItem('userProgress')
+    
+    // Force cache refresh by adding timestamp
+    const timestamp = new Date().getTime()
+    window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + '_t=' + timestamp
+  }
+
+  // Function to clear progress for current user
+  const clearUserProgress = async () => {
+    if (!user) return
+    
+    try {
+      // Clear from database
+      const { error } = await supabase
+        .from('user_progress')
+        .delete()
+        .eq('user_id', user.id)
+      
+      if (error) {
+        alert('Error clearing progress. Please try again.')
+        return
+      }
+      
+      // Clear from local state
+      setUserProgress([])
+      
+      // Clear cache
+      localStorage.removeItem('userProgress')
+      localStorage.removeItem('courseData')
+      
+      alert('Progress cleared successfully!')
+      
+      // Refresh the page
+      window.location.reload()
+    } catch (error) {
+      alert('Error clearing progress. Please try again.')
+    }
+  }
 
   const handleMarkLessonCompleted = async (lessonId: string, completed: boolean) => {
     if (!user) return
@@ -557,6 +604,28 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <span>Progress: {completedCount}/{totalLessons}</span>
               </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={clearUserProgress}
+                  className="flex items-center space-x-2 text-red-500 hover:text-red-700 transition-colors text-xs"
+                  title="Clear progress for current user"
+                >
+                  <span>Clear Progress</span>
+                </button>
+                <button
+                  onClick={clearAllCache}
+                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors text-xs"
+                  title="Clear cache for testing"
+                >
+                  <span>Clear Cache</span>
+                </button>
+                <button
+                  onClick={refreshCourseData}
+                  className="flex items-center space-x-2 text-blue-500 hover:text-blue-700 transition-colors text-xs"
+                  title="Refresh course data from server"
+                >
+                  <span>Refresh Course</span>
+                </button>
               <button
                 onClick={handleSignOut}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -564,6 +633,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                 <LogOut size={20} />
                 <span className="text-sm">Sign Out</span>
               </button>
+              </div>
             </div>
           </div>
         </div>
