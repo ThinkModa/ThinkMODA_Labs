@@ -90,7 +90,7 @@ export const courseService = {
     visibility?: 'public' | 'private'
   }): Promise<Course> {
     try {
-      console.log('createCourse called with:', courseData)
+      console.log('createCourse called with (v2.1):', courseData)
       
       // Convert frontend visibility values to database enum values
       const dbVisibility = courseData.visibility === 'private' ? 'PRIVATE' : 'OPEN'
