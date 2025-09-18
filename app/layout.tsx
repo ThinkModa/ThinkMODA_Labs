@@ -2,8 +2,8 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Thinkmoda Course Builder',
-  description: 'Course management platform for Thinkmoda',
+  title: 'LaunchPad - ThinkMODA Labs',
+  description: 'LaunchPad Accelerator - Build and scale your business confidently',
 }
 
 export default function RootLayout({
