@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'LaunchPad - ThinkMODA Labs',
+  title: 'ThinkMODA Labs',
   description: 'LaunchPad Accelerator - Build and scale your business confidently',
 }
 
