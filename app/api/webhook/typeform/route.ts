@@ -205,3 +205,4 @@ export async function GET(request: NextRequest) {
     optional_hidden_fields: ['course_id']
   })
 }
+

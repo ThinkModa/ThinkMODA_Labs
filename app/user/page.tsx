@@ -63,7 +63,7 @@ export default function UserLandingPage() {
         
         if (courses.length > 0) {
           // Filter to only show public courses
-          const openCourses = courses.filter((course: any) => course.visibility === 'OPEN')
+          const openCourses = courses.filter((course: any) => course.visibility === 'public')
           
           const formattedCourses = openCourses.map((course: any) => {
             const courseProgress = progressService.calculateCourseProgress(course, progress)
@@ -76,7 +76,7 @@ export default function UserLandingPage() {
               originalPrice: "$499.00",
               image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop",
               progress: courseProgress,
-              totalLessons: course.sections ? course.sections.reduce((acc: number, section: any) => acc + (section.lessons ? section.lessons.length : 0), 0) : 0,
+              totalLessons: course.sections.reduce((acc: number, section: any) => acc + section.lessons.length, 0),
               completedLessons: progress.filter((p: any) => p.completed).length
             }
           })

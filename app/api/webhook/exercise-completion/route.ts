@@ -182,3 +182,9 @@ export async function GET(request: NextRequest) {
     description: 'This endpoint handles exercise completion webhooks from external sources like Typeform'
   })
 }
+
+
+
+
+
+
