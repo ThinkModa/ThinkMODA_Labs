@@ -62,8 +62,8 @@ export default function UserLandingPage() {
         setUserProgress(progress)
         
         if (courses.length > 0) {
-          // Filter to only show public courses
-          const openCourses = courses.filter((course: any) => course.visibility === 'public')
+          // Filter to only show public courses (database uses 'OPEN' enum)
+          const openCourses = courses.filter((course: any) => course.visibility === 'OPEN')
           
           const formattedCourses = openCourses.map((course: any) => {
             const courseProgress = progressService.calculateCourseProgress(course, progress)

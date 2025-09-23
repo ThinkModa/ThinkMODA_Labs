@@ -774,11 +774,11 @@ export default function CourseBuilderPage() {
                           <span>Click to edit</span>
                         </div>
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          course.visibility === 'public'
+                          course.visibility === 'OPEN'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {course.visibility === 'public' ? 'Public' : 'Private'}
+                          {course.visibility === 'OPEN' ? 'Public' : 'Private'}
                         </span>
                       </div>
                     </div>
