@@ -17,7 +17,10 @@ import {
   Image,
   FormInput,
   ChevronDown,
-  Eye
+  Eye,
+  ChevronUp,
+  ChevronDown as ChevronDownIcon,
+  GripVertical
 } from 'lucide-react'
 import { courseService, CourseWithSections, Section, Lesson } from '@/lib/services/courses-supabase'
 
@@ -47,6 +50,11 @@ export default function CourseBuilderPage() {
   const [showFormattingToolbar, setShowFormattingToolbar] = useState(false)
   const [selectedText, setSelectedText] = useState({ start: 0, end: 0 })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Drag and drop state
+  const [draggedSection, setDraggedSection] = useState<string | null>(null)
+  const [draggedLesson, setDraggedLesson] = useState<{lessonId: string, sectionId: string} | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
 
 
 
@@ -348,6 +356,151 @@ export default function CourseBuilderPage() {
       } catch (error) {
         alert('Failed to delete section. Please try again.')
       }
+    }
+  }
+
+  // Drag and drop handlers
+  const handleSectionMoveUp = async (sectionId: string) => {
+    if (!selectedCourse || isReordering) return
+    
+    const sections = selectedCourse.sections || []
+    const currentIndex = sections.findIndex(s => s.id === sectionId)
+    
+    if (currentIndex <= 0) return // Already at top
+    
+    setIsReordering(true)
+    try {
+      // Swap with previous section
+      const newSections = [...sections]
+      const temp = newSections[currentIndex]
+      newSections[currentIndex] = newSections[currentIndex - 1]
+      newSections[currentIndex - 1] = temp
+      
+      // Update order positions
+      const sectionIds = newSections.map(s => s.id)
+      await courseService.reorderSections(selectedCourse.id, sectionIds)
+      
+      // Update local state
+      const updatedCourse = { ...selectedCourse, sections: newSections }
+      setSelectedCourse(updatedCourse)
+      setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+      
+    } catch (error) {
+      console.error('Error reordering sections:', error)
+      alert('Failed to reorder sections. Please try again.')
+    } finally {
+      setIsReordering(false)
+    }
+  }
+
+  const handleSectionMoveDown = async (sectionId: string) => {
+    if (!selectedCourse || isReordering) return
+    
+    const sections = selectedCourse.sections || []
+    const currentIndex = sections.findIndex(s => s.id === sectionId)
+    
+    if (currentIndex >= sections.length - 1) return // Already at bottom
+    
+    setIsReordering(true)
+    try {
+      // Swap with next section
+      const newSections = [...sections]
+      const temp = newSections[currentIndex]
+      newSections[currentIndex] = newSections[currentIndex + 1]
+      newSections[currentIndex + 1] = temp
+      
+      // Update order positions
+      const sectionIds = newSections.map(s => s.id)
+      await courseService.reorderSections(selectedCourse.id, sectionIds)
+      
+      // Update local state
+      const updatedCourse = { ...selectedCourse, sections: newSections }
+      setSelectedCourse(updatedCourse)
+      setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+      
+    } catch (error) {
+      console.error('Error reordering sections:', error)
+      alert('Failed to reorder sections. Please try again.')
+    } finally {
+      setIsReordering(false)
+    }
+  }
+
+  const handleLessonMoveUp = async (lessonId: string, sectionId: string) => {
+    if (!selectedCourse || isReordering) return
+    
+    const section = selectedCourse.sections?.find(s => s.id === sectionId)
+    if (!section || !section.lessons) return
+    
+    const lessons = section.lessons
+    const currentIndex = lessons.findIndex(l => l.id === lessonId)
+    
+    if (currentIndex <= 0) return // Already at top
+    
+    setIsReordering(true)
+    try {
+      // Swap with previous lesson
+      const newLessons = [...lessons]
+      const temp = newLessons[currentIndex]
+      newLessons[currentIndex] = newLessons[currentIndex - 1]
+      newLessons[currentIndex - 1] = temp
+      
+      // Update order positions
+      const lessonIds = newLessons.map(l => l.id)
+      await courseService.reorderLessons(sectionId, lessonIds)
+      
+      // Update local state
+      const updatedSections = selectedCourse.sections?.map(s => 
+        s.id === sectionId ? { ...s, lessons: newLessons } : s
+      ) || []
+      const updatedCourse = { ...selectedCourse, sections: updatedSections }
+      setSelectedCourse(updatedCourse)
+      setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+      
+    } catch (error) {
+      console.error('Error reordering lessons:', error)
+      alert('Failed to reorder lessons. Please try again.')
+    } finally {
+      setIsReordering(false)
+    }
+  }
+
+  const handleLessonMoveDown = async (lessonId: string, sectionId: string) => {
+    if (!selectedCourse || isReordering) return
+    
+    const section = selectedCourse.sections?.find(s => s.id === sectionId)
+    if (!section || !section.lessons) return
+    
+    const lessons = section.lessons
+    const currentIndex = lessons.findIndex(l => l.id === lessonId)
+    
+    if (currentIndex >= lessons.length - 1) return // Already at bottom
+    
+    setIsReordering(true)
+    try {
+      // Swap with next lesson
+      const newLessons = [...lessons]
+      const temp = newLessons[currentIndex]
+      newLessons[currentIndex] = newLessons[currentIndex + 1]
+      newLessons[currentIndex + 1] = temp
+      
+      // Update order positions
+      const lessonIds = newLessons.map(l => l.id)
+      await courseService.reorderLessons(sectionId, lessonIds)
+      
+      // Update local state
+      const updatedSections = selectedCourse.sections?.map(s => 
+        s.id === sectionId ? { ...s, lessons: newLessons } : s
+      ) || []
+      const updatedCourse = { ...selectedCourse, sections: updatedSections }
+      setSelectedCourse(updatedCourse)
+      setCourses(courses.map(c => c.id === selectedCourse.id ? updatedCourse : c))
+      
+    } catch (error) {
+      console.error('Error reordering lessons:', error)
+      alert('Failed to reorder lessons. Please try again.')
+    } finally {
+      setIsReordering(false)
     }
   }
 
@@ -926,9 +1079,29 @@ export default function CourseBuilderPage() {
               {selectedCourse.sections && selectedCourse.sections.length > 0 ? selectedCourse.sections.map((section, sectionIndex) => (
                 <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900">{section.title}</h4>
-                      <p className="text-gray-600 text-sm">{section.description}</p>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex flex-col space-y-1">
+                        <button
+                          onClick={() => handleSectionMoveUp(section.id)}
+                          disabled={sectionIndex === 0 || isReordering}
+                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Move section up"
+                        >
+                          <ChevronUp size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleSectionMoveDown(section.id)}
+                          disabled={sectionIndex === selectedCourse.sections.length - 1 || isReordering}
+                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Move section down"
+                        >
+                          <ChevronDownIcon size={16} />
+                        </button>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900">{section.title}</h4>
+                        <p className="text-gray-600 text-sm">{section.description}</p>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">{section.lessons.length} lessons</span>
@@ -944,12 +1117,30 @@ export default function CourseBuilderPage() {
 
                   {/* Lessons */}
                   <div className="space-y-3">
-                    {section.lessons.map((lesson) => (
+                    {section.lessons.map((lesson, lessonIndex) => (
                       <div
                         key={lesson.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
                         <div className="flex items-center space-x-3">
+                          <div className="flex flex-col space-y-1">
+                            <button
+                              onClick={() => handleLessonMoveUp(lesson.id, section.id)}
+                              disabled={lessonIndex === 0 || isReordering}
+                              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Move lesson up"
+                            >
+                              <ChevronUp size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleLessonMoveDown(lesson.id, section.id)}
+                              disabled={lessonIndex === section.lessons.length - 1 || isReordering}
+                              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Move lesson down"
+                            >
+                              <ChevronDownIcon size={14} />
+                            </button>
+                          </div>
                           <Play size={16} className="text-gray-400" />
                           <div>
                             <h5 className="font-medium text-gray-900">{lesson.title}</h5>
