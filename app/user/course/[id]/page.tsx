@@ -341,6 +341,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const renderLessonContent = (content: string) => {
     if (!content) return <p className="text-gray-500">No content available for this lesson.</p>
     
+    console.log('🎯 renderLessonContent called with content:', content.substring(0, 200) + '...')
+    console.log('🎯 Current user:', user ? { id: user.id, email: user.email } : 'null')
+    console.log('🎯 Current selectedLesson:', selectedLesson)
     
     // Handle backward compatibility - convert all old formats to new embed format
     let processedContent = content
@@ -366,6 +369,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         // Handle different content types (including old formats for backward compatibility)
         if (line.startsWith('/embed ')) {
           const originalUrl = line.substring(7).trim()
+          console.log('🔍 Processing embed URL:', originalUrl)
           if (originalUrl) {
             // Determine content type based on URL
             let contentType = 'iframe'
