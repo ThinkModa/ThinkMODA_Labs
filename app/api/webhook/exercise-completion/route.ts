@@ -16,14 +16,27 @@ export async function POST(request: NextRequest) {
     console.log('📝 Webhook payload:', JSON.stringify(body, null, 2))
     
     // Extract data from the webhook payload
-    const { 
-      user_email, 
-      lesson_id, 
-      course_id, 
-      completion_data,
-      timestamp,
-      source = 'webhook'
-    } = body
+    // Handle Typeform webhook structure
+    let user_email, lesson_id, course_id, completion_data, timestamp, source = 'webhook'
+    
+    if (body.form_response && body.form_response.hidden) {
+      // Typeform webhook structure
+      const hidden = body.form_response.hidden
+      user_email = hidden.email
+      lesson_id = hidden.lesson_id
+      course_id = hidden.course_id
+      completion_data = body.form_response
+      timestamp = body.form_response.submitted_at
+      source = 'typeform'
+    } else {
+      // Direct webhook structure (legacy)
+      user_email = body.user_email
+      lesson_id = body.lesson_id
+      course_id = body.course_id
+      completion_data = body.completion_data
+      timestamp = body.timestamp
+      source = body.source || 'webhook'
+    }
     
     // Validate required fields
     if (!user_email || !lesson_id) {

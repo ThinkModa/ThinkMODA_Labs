@@ -498,7 +498,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             if (formIdMatch) {
               const formId = formIdMatch[1]
               // Generate dynamic Typeform URL with hidden fields
-              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson.id, params.id)
             }
           }
           }
