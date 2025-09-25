@@ -96,11 +96,36 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
         setCourse(foundCourse)
         setUserProgress(progress)
         
-        // Set first lesson as selected by default if no lesson is currently selected
-        if (foundCourse && foundCourse.sections && !selectedLesson && foundCourse.sections.length > 0 && foundCourse.sections[0].lessons && foundCourse.sections[0].lessons.length > 0) {
-          const firstLesson = foundCourse.sections[0].lessons[0]
-          setSelectedLesson(firstLesson.id)
-          setCurrentLessonContent(firstLesson.content)
+        // Set next incomplete lesson as selected by default if no lesson is currently selected
+        if (foundCourse && foundCourse.sections && !selectedLesson && foundCourse.sections.length > 0) {
+          // Find the next incomplete lesson (inline logic)
+          let nextIncompleteLesson = null
+          for (const section of foundCourse.sections) {
+            if (section.lessons) {
+              for (const lesson of section.lessons) {
+                // Check if lesson is not completed (using progress data)
+                const isCompleted = progress.some((p: any) => p.lesson_id === lesson.id && p.completed)
+                if (!isCompleted) {
+                  nextIncompleteLesson = lesson
+                  break
+                }
+              }
+              if (nextIncompleteLesson) break
+            }
+          }
+          
+          if (nextIncompleteLesson) {
+            setSelectedLesson(nextIncompleteLesson.id)
+            setCurrentLessonContent(nextIncompleteLesson.content)
+          } else {
+            // If all lessons are completed, show the last lesson
+            const lastSection = foundCourse.sections[foundCourse.sections.length - 1]
+            if (lastSection && lastSection.lessons && lastSection.lessons.length > 0) {
+              const lastLesson = lastSection.lessons[lastSection.lessons.length - 1]
+              setSelectedLesson(lastLesson.id)
+              setCurrentLessonContent(lastLesson.content)
+            }
+          }
         } else if (foundCourse && foundCourse.sections && selectedLesson) {
           // Update current lesson content if lesson is still selected
           for (const section of foundCourse.sections) {
