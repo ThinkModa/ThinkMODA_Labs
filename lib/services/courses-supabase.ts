@@ -39,6 +39,20 @@ export const courseService = {
         throw new Error('Failed to fetch courses')
       }
 
+      // Sort sections and lessons by order_position after fetching
+      if (courses) {
+        courses.forEach((course: any) => {
+          if (course.sections) {
+            course.sections.sort((a: any, b: any) => (a.order_position || 0) - (b.order_position || 0))
+            course.sections.forEach((section: any) => {
+              if (section.lessons) {
+                section.lessons.sort((a: any, b: any) => (a.order_position || 0) - (b.order_position || 0))
+              }
+            })
+          }
+        })
+      }
+
       console.log('courses-supabase: Courses fetched successfully:', courses?.length || 0)
       if (courses && courses.length > 0) {
         courses.forEach((course, index) => {
@@ -72,6 +86,16 @@ export const courseService = {
         `)
         .eq('id', id)
         .single()
+
+      // Sort sections and lessons by order_position after fetching
+      if (course && course.sections) {
+        course.sections.sort((a: any, b: any) => (a.order_position || 0) - (b.order_position || 0))
+        course.sections.forEach((section: any) => {
+          if (section.lessons) {
+            section.lessons.sort((a: any, b: any) => (a.order_position || 0) - (b.order_position || 0))
+          }
+        })
+      }
 
       if (error) {
         console.error('Error fetching course:', error)
@@ -184,12 +208,33 @@ export const courseService = {
     courseId: string
   }): Promise<Section> {
     try {
+      // Get the next order position for this course
+      let nextOrderPosition = 1
+      
+      try {
+        const { data: existingSections, error: countError } = await supabase
+          .from('sections')
+          .select('order_position')
+          .eq('course_id', sectionData.courseId)
+          .order('order_position', { ascending: false })
+          .limit(1)
+
+        if (!countError && existingSections && existingSections.length > 0) {
+          nextOrderPosition = (existingSections[0].order_position || 0) + 1
+        }
+      } catch (orderError) {
+        console.log('Order position query failed, using default:', orderError)
+        // If order_position column doesn't exist, just use 1
+        nextOrderPosition = 1
+      }
+
       const { data: section, error } = await supabase
         .from('sections')
         .insert({
           title: sectionData.title,
           description: sectionData.description || '',
-          course_id: sectionData.courseId
+          course_id: sectionData.courseId,
+          order_position: nextOrderPosition
         })
         .select()
         .single()
@@ -260,7 +305,8 @@ export const courseService = {
       const insertData: any = {
         title: lessonData.title,
         content: lessonData.content,
-        section_id: lessonData.sectionId
+        section_id: lessonData.sectionId,
+        order_position: parseInt(nextOrderPosition)
       }
 
       // Add details if provided (this column exists)
@@ -332,6 +378,70 @@ export const courseService = {
       }
     } catch (error) {
       console.error('Error in deleteLesson:', error)
+      throw error
+    }
+  },
+
+  // Reorder lessons within a section
+  async reorderLessons(sectionId: string, lessonIds: string[]): Promise<void> {
+    try {
+      console.log('Reordering lessons:', { sectionId, lessonIds })
+      
+      // Update each lesson's order_position based on its position in the array
+      const updates = lessonIds.map((lessonId, index) => ({
+        id: lessonId,
+        order_position: index + 1
+      }))
+
+      // Update lessons one by one to ensure proper ordering
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('lessons')
+          .update({ order_position: update.order_position })
+          .eq('id', update.id)
+          .eq('section_id', sectionId)
+
+        if (error) {
+          console.error('Error updating lesson order:', error)
+          throw new Error(`Failed to update lesson order for ${update.id}`)
+        }
+      }
+
+      console.log('Lessons reordered successfully')
+    } catch (error) {
+      console.error('Error in reorderLessons:', error)
+      throw error
+    }
+  },
+
+  // Reorder sections within a course
+  async reorderSections(courseId: string, sectionIds: string[]): Promise<void> {
+    try {
+      console.log('Reordering sections:', { courseId, sectionIds })
+      
+      // Update each section's order_position based on its position in the array
+      const updates = sectionIds.map((sectionId, index) => ({
+        id: sectionId,
+        order_position: index + 1
+      }))
+
+      // Update sections one by one to ensure proper ordering
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('sections')
+          .update({ order_position: update.order_position })
+          .eq('id', update.id)
+          .eq('course_id', courseId)
+
+        if (error) {
+          console.error('Error updating section order:', error)
+          throw new Error(`Failed to update section order for ${update.id}`)
+        }
+      }
+
+      console.log('Sections reordered successfully')
+    } catch (error) {
+      console.error('Error in reorderSections:', error)
       throw error
     }
   }
