@@ -205,6 +205,45 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
     return null
   }
 
+  // Get the next lesson in sequence after the current lesson
+  const getNextLessonInSequence = (currentLessonId: string) => {
+    if (!course || !course.sections) return null
+    
+    // Flatten all lessons into a single array with their positions
+    const allLessons: Array<{id: string, title: string, content: string, position: number}> = []
+    let position = 0
+    
+    for (const section of course.sections) {
+      if (section.lessons) {
+        for (const lesson of section.lessons) {
+          allLessons.push({
+            id: lesson.id,
+            title: lesson.title,
+            content: lesson.content,
+            position: position++
+          })
+        }
+      }
+    }
+    
+    // Find current lesson position
+    const currentLessonIndex = allLessons.findIndex(lesson => lesson.id === currentLessonId)
+    
+    if (currentLessonIndex === -1) {
+      // Current lesson not found
+      return null
+    }
+    
+    // Return the next lesson in sequence
+    const nextIndex = currentLessonIndex + 1
+    if (nextIndex < allLessons.length) {
+      return allLessons[nextIndex]
+    }
+    
+    // No next lesson (end of course)
+    return null
+  }
+
   const isLessonUnlocked = (lessonId: string) => {
     const nextUnlocked = getNextUnlockedLesson()
     return nextUnlocked === lessonId
@@ -234,54 +273,39 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   }
 
   // Auto-advance to next lesson after completion
-  const autoAdvanceToNextLesson = async () => {
+  const autoAdvanceToNextLesson = async (currentLessonId: string) => {
     try {
       // Start transition effect
       setIsTransitioning(true)
       
-      // Refresh user progress to get the latest completion status
-      await refreshUserProgress()
+      // Get the next lesson in sequence (no need to refresh progress - use current state)
+      const nextLesson = getNextLessonInSequence(currentLessonId)
       
-      // Get the next unlocked lesson
-      const nextLessonId = getNextUnlockedLesson()
-      
-      if (nextLessonId) {
-        // Find the next lesson details
-        let nextLesson = null
-        for (const section of course.sections) {
-          const lesson = section.lessons ? section.lessons.find((l: any) => l.id === nextLessonId) : null
-          if (lesson) {
-            nextLesson = lesson
-            break
-          }
+      if (nextLesson) {
+        // Add a brief delay for smooth transition
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // Smoothly transition to the next lesson
+        setSelectedLesson(nextLesson.id)
+        setCurrentLessonContent(nextLesson.content)
+        
+        // Scroll to top of lesson content
+        const lessonContentElement = document.getElementById('lesson-content')
+        if (lessonContentElement) {
+          lessonContentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }
         
-        if (nextLesson) {
-          // Add a brief delay for smooth transition
-          await new Promise(resolve => setTimeout(resolve, 300))
-          
-          // Smoothly transition to the next lesson
-          setSelectedLesson(nextLessonId)
-          setCurrentLessonContent(nextLesson.content)
-          
-          // Scroll to top of lesson content
-          const lessonContentElement = document.getElementById('lesson-content')
-          if (lessonContentElement) {
-            lessonContentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }
-          
-          // End transition effect
-          setTimeout(() => {
-            setIsTransitioning(false)
-          }, 500)
-          
-          return true // Successfully advanced
-        }
+        // End transition effect
+        setTimeout(() => {
+          setIsTransitioning(false)
+        }, 500)
+        
+        return true // Successfully advanced
       }
       
       // End transition effect if no next lesson
       setIsTransitioning(false)
-      return false // No next lesson found
+      return false // No next lesson found (end of course)
     } catch (error) {
       console.error('Error in auto-advance:', error)
       setIsTransitioning(false)
@@ -731,14 +755,14 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                 
                                 // Auto-advance to next lesson instead of refreshing page
                                 setTimeout(async () => {
-                                  const advanced = await autoAdvanceToNextLesson()
+                                  const advanced = await autoAdvanceToNextLesson(selectedLesson)
                                   
                                   if (!advanced) {
                                     // If no next lesson, show completion message and refresh
                                     alert('Congratulations! You have completed all available lessons in this course!')
                                     window.location.reload()
                                   }
-                                }, 1500) // Slightly longer delay to show completion feedback
+                                }, 1000) // Reduced delay for better UX
                               } else {
                                 // Show message that typeform needs to be completed
                                 alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
