@@ -425,7 +425,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   ) : (
                     <iframe 
                       src={embedUrl} 
-                      className="w-full h-96 rounded-lg"
+                      className={`w-full rounded-lg ${
+                        contentType === 'form' ? 'h-[600px]' : 'h-96'
+                      }`}
                       frameBorder="0"
                       allowFullScreen
                       title="Embedded content"
@@ -497,7 +499,9 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                 ) : (
                   <iframe 
                     src={embedUrl} 
-                    className="w-full h-96 rounded-lg"
+                    className={`w-full rounded-lg ${
+                      contentType === 'form' ? 'h-[600px]' : 'h-96'
+                    }`}
                     frameBorder="0"
                     allowFullScreen
                     title="Embedded content"
