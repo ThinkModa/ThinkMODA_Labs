@@ -403,6 +403,32 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               contentType = 'form'
               icon = FormInput
               label = 'Form'
+              
+              // Handle Typeform URLs with dynamic hidden fields
+              console.log('🔍 Checking Typeform detection (location 1):', { 
+                hasUser: !!user, 
+                hasSelectedLesson: !!selectedLesson, 
+                url: originalUrl,
+                isTypeform: originalUrl.includes('typeform.com')
+              })
+              
+              if (user && selectedLesson) {
+                // Extract form ID from URL
+                const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+                console.log('🔍 Form ID match result (location 1):', formIdMatch)
+                
+                if (formIdMatch) {
+                  const formId = formIdMatch[1]
+                  console.log('🔄 Generating dynamic Typeform URL (location 1):', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
+                  // Generate dynamic Typeform URL with hidden fields
+                  embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+                  console.log('✅ Generated URL (location 1):', embedUrl)
+                } else {
+                  console.log('❌ No form ID match found in URL (location 1):', originalUrl)
+                }
+              } else {
+                console.log('❌ Cannot generate dynamic URL (location 1) - missing user or selectedLesson:', { user: !!user, selectedLesson })
+              }
             } else if (originalUrl.includes('docs.google.com') || 
                        originalUrl.includes('coda.io') || 
                        originalUrl.includes('notion.so') ||
@@ -411,32 +437,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               contentType = 'document'
               icon = FileText
               label = 'Document'
-            
-            // Handle Typeform URLs with dynamic hidden fields
-            console.log('🔍 Checking Typeform detection (location 1):', { 
-              hasUser: !!user, 
-              hasSelectedLesson: !!selectedLesson, 
-              url: originalUrl,
-              isTypeform: originalUrl.includes('typeform.com')
-            })
-            
-            if (user && selectedLesson) {
-              // Extract form ID from URL
-              const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
-              console.log('🔍 Form ID match result (location 1):', formIdMatch)
-              
-              if (formIdMatch) {
-                const formId = formIdMatch[1]
-                console.log('🔄 Generating dynamic Typeform URL (location 1):', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
-                // Generate dynamic Typeform URL with hidden fields
-                embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
-                console.log('✅ Generated URL (location 1):', embedUrl)
-              } else {
-                console.log('❌ No form ID match found in URL (location 1):', originalUrl)
-              }
-            } else {
-              console.log('❌ Cannot generate dynamic URL (location 1) - missing user or selectedLesson:', { user: !!user, selectedLesson })
-            }
             }
             
             const Icon = icon
@@ -501,6 +501,32 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             contentType = 'form'
             icon = FormInput
             label = 'Form'
+            
+            // Handle Typeform URLs with dynamic hidden fields
+            console.log('🔍 Checking Typeform detection (location 2):', { 
+              hasUser: !!user, 
+              hasSelectedLesson: !!selectedLesson, 
+              url: originalUrl,
+              isTypeform: originalUrl.includes('typeform.com')
+            })
+            
+            if (user && selectedLesson) {
+              // Extract form ID from URL
+              const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
+              console.log('🔍 Form ID match result (location 2):', formIdMatch)
+              
+              if (formIdMatch) {
+                const formId = formIdMatch[1]
+                console.log('🔄 Generating dynamic Typeform URL (location 2):', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
+                // Generate dynamic Typeform URL with hidden fields
+                embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+                console.log('✅ Generated URL (location 2):', embedUrl)
+              } else {
+                console.log('❌ No form ID match found in URL (location 2):', originalUrl)
+              }
+            } else {
+              console.log('❌ Cannot generate dynamic URL (location 2) - missing user or selectedLesson:', { user: !!user, selectedLesson })
+            }
           } else if (originalUrl.includes('docs.google.com') || 
                      originalUrl.includes('coda.io') || 
                      originalUrl.includes('notion.so') ||
@@ -509,32 +535,6 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             contentType = 'document'
             icon = FileText
             label = 'Document'
-          
-          // Handle Typeform URLs with dynamic hidden fields
-          console.log('🔍 Checking Typeform detection (location 2):', { 
-            hasUser: !!user, 
-            hasSelectedLesson: !!selectedLesson, 
-            url: originalUrl,
-            isTypeform: originalUrl.includes('typeform.com')
-          })
-          
-          if (user && selectedLesson) {
-            // Extract form ID from URL
-            const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
-            console.log('🔍 Form ID match result (location 2):', formIdMatch)
-            
-            if (formIdMatch) {
-              const formId = formIdMatch[1]
-              console.log('🔄 Generating dynamic Typeform URL (location 2):', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
-              // Generate dynamic Typeform URL with hidden fields
-              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
-              console.log('✅ Generated URL (location 2):', embedUrl)
-            } else {
-              console.log('❌ No form ID match found in URL (location 2):', originalUrl)
-            }
-          } else {
-            console.log('❌ Cannot generate dynamic URL (location 2) - missing user or selectedLesson:', { user: !!user, selectedLesson })
-          }
           }
           
           const Icon = icon
