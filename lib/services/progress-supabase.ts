@@ -122,19 +122,27 @@ export const progressService = {
 
   // Generate Typeform URL with hidden fields
   generateTypeformUrl(formId: string, userData: any, lessonId: string, courseId: string): string {
-    const baseUrl = `https://form.typeform.com/to/${formId}`
-    const params = new URLSearchParams({
-      user_id: userData.id,
-      lesson_id: lessonId,
-      course_id: courseId,
-      first_name: userData.first_name || '',
-      last_name: userData.last_name || '',
-      email: userData.email || '',
-      company_name: userData.company_name || '',
-      phone_number: userData.phone_number || ''
-    })
+    console.log('🔧 generateTypeformUrl called with:', { formId, userData, lessonId, courseId })
     
-    return `${baseUrl}#${params.toString()}`
+    const baseUrl = `https://form.typeform.com/to/${formId}`
+    
+    // Typeform expects hidden fields as fragment identifiers (after #)
+    // Format: #field1=value1&field2=value2&field3=value3
+    const hiddenFields = [
+      `user_id=${encodeURIComponent(userData.id)}`,
+      `lesson_id=${encodeURIComponent(lessonId)}`,
+      `course_id=${encodeURIComponent(courseId)}`,
+      `first_name=${encodeURIComponent(userData.first_name || '')}`,
+      `last_name=${encodeURIComponent(userData.last_name || '')}`,
+      `email=${encodeURIComponent(userData.email || '')}`,
+      `company_name=${encodeURIComponent(userData.company_name || '')}`,
+      `phone_number=${encodeURIComponent(userData.phone_number || '')}`
+    ].join('&')
+    
+    const finalUrl = `${baseUrl}#${hiddenFields}`
+    console.log('🔧 Generated Typeform URL:', finalUrl)
+    
+    return finalUrl
   },
 
   // Check if lesson has embedded typeform
