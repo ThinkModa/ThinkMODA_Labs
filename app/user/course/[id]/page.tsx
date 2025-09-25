@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight, Eye } from 'lucide-react'
+import { Play, Clock, ArrowLeft, CheckCircle, Circle, LogOut, Video, Image, FormInput, Lock, ChevronDown, ChevronRight, Eye, FileText } from 'lucide-react'
 import { courseService, Course } from '@/lib/services/courses-supabase'
 import { progressService, UserProgress } from '@/lib/services/progress-supabase'
 import { supabase } from '@/lib/supabase'
@@ -399,6 +399,14 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               contentType = 'form'
               icon = FormInput
               label = 'Form'
+            } else if (originalUrl.includes('docs.google.com') || 
+                       originalUrl.includes('coda.io') || 
+                       originalUrl.includes('notion.so') ||
+                       originalUrl.includes('airtable.com') ||
+                       originalUrl.includes('figma.com')) {
+              contentType = 'document'
+              icon = FileText
+              label = 'Document'
             
             // Handle Typeform URLs with dynamic hidden fields
             if (user && selectedLesson) {
@@ -426,7 +434,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                     <iframe 
                       src={embedUrl} 
                       className={`w-full rounded-lg ${
-                        contentType === 'form' ? 'h-[600px]' : 'h-96'
+                        contentType === 'form' ? 'h-[600px]' : 
+                        contentType === 'document' ? 'h-[800px]' : 'h-96'
                       }`}
                       frameBorder="0"
                       allowFullScreen
@@ -473,6 +482,14 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             contentType = 'form'
             icon = FormInput
             label = 'Form'
+          } else if (originalUrl.includes('docs.google.com') || 
+                     originalUrl.includes('coda.io') || 
+                     originalUrl.includes('notion.so') ||
+                     originalUrl.includes('airtable.com') ||
+                     originalUrl.includes('figma.com')) {
+            contentType = 'document'
+            icon = FileText
+            label = 'Document'
           
           // Handle Typeform URLs with dynamic hidden fields
           if (user && selectedLesson) {
@@ -500,7 +517,8 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                   <iframe 
                     src={embedUrl} 
                     className={`w-full rounded-lg ${
-                      contentType === 'form' ? 'h-[600px]' : 'h-96'
+                      contentType === 'form' ? 'h-[600px]' : 
+                      contentType === 'document' ? 'h-[800px]' : 'h-96'
                     }`}
                     frameBorder="0"
                     allowFullScreen
