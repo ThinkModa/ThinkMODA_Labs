@@ -20,6 +20,7 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
   const [userProgress, setUserProgress] = useState<UserProgress[]>([])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [previewProgress, setPreviewProgress] = useState<Set<string>>(new Set()) // For preview mode
+  const [isTransitioning, setIsTransitioning] = useState(false) // For auto-advance transition
   
   // Preview mode detection
   const isPreviewMode = searchParams.get('preview') === 'true'
@@ -229,6 +230,62 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
           break
         }
       }
+    }
+  }
+
+  // Auto-advance to next lesson after completion
+  const autoAdvanceToNextLesson = async () => {
+    try {
+      // Start transition effect
+      setIsTransitioning(true)
+      
+      // Refresh user progress to get the latest completion status
+      await refreshUserProgress()
+      
+      // Get the next unlocked lesson
+      const nextLessonId = getNextUnlockedLesson()
+      
+      if (nextLessonId) {
+        // Find the next lesson details
+        let nextLesson = null
+        for (const section of course.sections) {
+          const lesson = section.lessons ? section.lessons.find((l: any) => l.id === nextLessonId) : null
+          if (lesson) {
+            nextLesson = lesson
+            break
+          }
+        }
+        
+        if (nextLesson) {
+          // Add a brief delay for smooth transition
+          await new Promise(resolve => setTimeout(resolve, 300))
+          
+          // Smoothly transition to the next lesson
+          setSelectedLesson(nextLessonId)
+          setCurrentLessonContent(nextLesson.content)
+          
+          // Scroll to top of lesson content
+          const lessonContentElement = document.getElementById('lesson-content')
+          if (lessonContentElement) {
+            lessonContentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          
+          // End transition effect
+          setTimeout(() => {
+            setIsTransitioning(false)
+          }, 500)
+          
+          return true // Successfully advanced
+        }
+      }
+      
+      // End transition effect if no next lesson
+      setIsTransitioning(false)
+      return false // No next lesson found
+    } catch (error) {
+      console.error('Error in auto-advance:', error)
+      setIsTransitioning(false)
+      return false
     }
   }
 
@@ -613,16 +670,31 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                 </div>
                 
                 {/* Lesson Content */}
-                <div className="prose max-w-none">
+                <div 
+                  id="lesson-content" 
+                  className={`prose max-w-none transition-opacity duration-300 ${
+                    isTransitioning ? 'opacity-50' : 'opacity-100'
+                  }`}
+                >
                   {renderLessonContent(currentLessonContent)}
                 </div>
+
+                {/* Transition Loading Indicator */}
+                {isTransitioning && (
+                  <div className="mt-8 text-center">
+                    <div className="inline-flex items-center space-x-2 text-blue-600">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                      <span className="text-sm font-medium">Advancing to next lesson...</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Complete Lesson Button */}
                 {(() => {
                   const currentLesson = course.sections.flatMap((s: any) => s.lessons).find((l: any) => l.id === selectedLesson)
                   const isCurrentLessonCompleted = currentLesson ? isLessonCompleted(currentLesson.id) : false
                   
-                  return selectedLesson && currentLesson && !isCurrentLessonCompleted ? (
+                  return selectedLesson && currentLesson && !isCurrentLessonCompleted && !isTransitioning ? (
                     <div className="mt-8 text-center">
                       <button
                         onClick={async (event) => {
@@ -657,10 +729,16 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                 // Show success message
                                 alert('Lesson completed successfully! Auto-advancing to next lesson...')
                                 
-                                // Auto-refresh the page after successful completion
-                                setTimeout(() => {
-                                  window.location.reload()
-                                }, 1000) // Longer delay to show completion feedback
+                                // Auto-advance to next lesson instead of refreshing page
+                                setTimeout(async () => {
+                                  const advanced = await autoAdvanceToNextLesson()
+                                  
+                                  if (!advanced) {
+                                    // If no next lesson, show completion message and refresh
+                                    alert('Congratulations! You have completed all available lessons in this course!')
+                                    window.location.reload()
+                                  }
+                                }, 1500) // Slightly longer delay to show completion feedback
                               } else {
                                 // Show message that typeform needs to be completed
                                 alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
