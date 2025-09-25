@@ -414,9 +414,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
               const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
               if (formIdMatch) {
                 const formId = formIdMatch[1]
+                console.log('🔄 Generating dynamic Typeform URL (location 1):', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
                 // Generate dynamic Typeform URL with hidden fields
                 embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+                console.log('✅ Generated URL (location 1):', embedUrl)
               }
+            } else {
+              console.log('❌ Cannot generate dynamic URL (location 1) - missing user or selectedLesson:', { user: !!user, selectedLesson })
             }
             }
             
@@ -497,9 +501,13 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
             const formIdMatch = originalUrl.match(/form\.typeform\.com\/to\/([a-zA-Z0-9]+)/)
             if (formIdMatch) {
               const formId = formIdMatch[1]
+              console.log('🔄 Generating dynamic Typeform URL:', { formId, userId: user.id, lessonId: selectedLesson, courseId: params.id })
               // Generate dynamic Typeform URL with hidden fields
-              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson.id, params.id)
+              embedUrl = progressService.generateTypeformUrl(formId, user, selectedLesson, params.id)
+              console.log('✅ Generated URL:', embedUrl)
             }
+          } else {
+            console.log('❌ Cannot generate dynamic URL - missing user or selectedLesson:', { user: !!user, selectedLesson })
           }
           }
           
