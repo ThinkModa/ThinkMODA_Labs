@@ -163,10 +163,10 @@ export const progressService = {
     try {
       const { data: progress, error } = await supabase
         .from('user_progress')
-        .select('typeform_submitted')
+        .select('source, completed')
         .eq('user_id', userId)
         .eq('lesson_id', lessonId)
-        .eq('typeform_submitted', true)
+        .eq('completed', true)
         .single()
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
@@ -174,7 +174,8 @@ export const progressService = {
         return false
       }
 
-      return !!progress?.typeform_submitted
+      // Check if the lesson was completed via typeform (source = 'typeform' or 'webhook')
+      return !!(progress && (progress.source === 'typeform' || progress.source === 'webhook'))
     } catch (error) {
       console.error('Error in isTypeformCompleted:', error)
       return false
