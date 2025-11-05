@@ -147,22 +147,18 @@ export const progressService = {
 
   // Check if lesson has embedded typeform
   hasEmbeddedTypeform(lessonContent: string): boolean {
-    // Check for specific Typeform URLs
-    const typeformUrls = [
-      'form.typeform.com/to/pZp1eiDj', // The Visionary
-      'form.typeform.com/to/ZIevyTG8', // The Mission
-      'form.typeform.com/to/xHocdpeq', // The Plan
-      'form.typeform.com/to/TgYsSfUX', // The Baseline
-      'form.typeform.com/to/NjzuCVgZ', // The Assessment
-      // Add your real TypeForm URLs here:
-      // 'form.typeform.com/to/YOUR_FORM_ID_1', // Your Lesson Title 1
-      // 'form.typeform.com/to/YOUR_FORM_ID_2', // Your Lesson Title 2
-      // 'form.typeform.com/to/YOUR_FORM_ID_3', // Your Lesson Title 3
-      // etc.
-    ]
+    if (!lessonContent) return false
     
-    return typeformUrls.some(url => lessonContent.includes(url)) || 
-           lessonContent.includes('typeform.com') || 
+    // Check for any Typeform URL pattern - this is the most reliable method
+    // This will catch ALL Typeform URLs, not just hardcoded ones
+    const typeformPattern = /form\.typeform\.com\/to\/[a-zA-Z0-9]+/i
+    
+    if (typeformPattern.test(lessonContent)) {
+      return true
+    }
+    
+    // Fallback: check for generic typeform mentions
+    return lessonContent.includes('typeform.com') || 
            lessonContent.includes('/typeform ')
   },
 

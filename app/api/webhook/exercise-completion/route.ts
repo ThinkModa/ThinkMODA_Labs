@@ -22,12 +22,17 @@ export async function POST(request: NextRequest) {
     if (body.form_response && body.form_response.hidden) {
       // Typeform webhook structure
       const hidden = body.form_response.hidden
-      user_email = hidden.email
+      // Support both 'email' and 'user_email' field names (Typeform can use either)
+      user_email = hidden.email || hidden.user_email
       lesson_id = hidden.lesson_id
       course_id = hidden.course_id
       completion_data = body.form_response
       timestamp = body.form_response.submitted_at
       source = 'typeform'
+      
+      console.log('📧 Typeform webhook - Hidden fields received:', JSON.stringify(hidden, null, 2))
+      console.log('📧 Extracted email:', user_email)
+      console.log('📚 Extracted lesson_id:', lesson_id)
     } else {
       // Direct webhook structure (legacy)
       user_email = body.user_email

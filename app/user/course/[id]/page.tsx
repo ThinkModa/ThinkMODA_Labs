@@ -845,8 +845,34 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                   }
                                 }, 1000) // Reduced delay for better UX
                               } else {
-                                // Show message that typeform needs to be completed
-                                alert('Please complete the embedded form before marking this lesson as complete. If you just completed the form, please wait a moment and try again.')
+                                // Show confirmation dialog to bypass Typeform requirement
+                                const skipTypeform = window.confirm(
+                                  'This lesson includes a form that hasn\'t been completed yet.\n\n' +
+                                  'Would you like to:\n' +
+                                  '• Click "OK" to skip the form and mark this lesson as complete\n' +
+                                  '• Click "Cancel" to complete the form first'
+                                )
+                                
+                                if (skipTypeform) {
+                                  // User chose to skip - mark lesson as complete
+                                  await handleMarkLessonCompleted(selectedLesson, true)
+                                  
+                                  // Show success message
+                                  alert('Lesson completed successfully! Auto-advancing to next lesson...')
+                                  
+                                  // Auto-advance to next lesson
+                                  setTimeout(async () => {
+                                    const advanced = await autoAdvanceToNextLesson(selectedLesson)
+                                    
+                                    if (!advanced) {
+                                      alert('Congratulations! You have completed all available lessons in this course!')
+                                      window.location.reload()
+                                    }
+                                  }, 1000)
+                                } else {
+                                  // User chose to complete form - show helpful message
+                                  alert('Please complete the embedded form above. Once you submit it, you can mark this lesson as complete.')
+                                }
                               }
                             }
                           } catch (error) {
@@ -1145,8 +1171,26 @@ export default function CourseLessonsPage({ params }: { params: { id: string } }
                                     window.location.reload()
                                   }, 1000)
                                 } else {
-                                  // Show message that typeform needs to be completed
-                                  alert('Please complete the embedded form before marking this lesson as complete.')
+                                  // Show confirmation dialog to bypass Typeform requirement
+                                  const skipTypeform = window.confirm(
+                                    'This lesson includes a form that hasn\'t been completed yet.\n\n' +
+                                    'Would you like to:\n' +
+                                    '• Click "OK" to skip the form and mark this lesson as complete\n' +
+                                    '• Click "Cancel" to complete the form first'
+                                  )
+                                  
+                                  if (skipTypeform) {
+                                    // User chose to skip - mark lesson as complete
+                                    await handleMarkLessonCompleted(selectedLesson, true)
+                                    alert('Lesson completed successfully! Auto-advancing to next lesson...')
+                                    // Auto-refresh the page after successful completion
+                                    setTimeout(() => {
+                                      window.location.reload()
+                                    }, 1000)
+                                  } else {
+                                    // User chose to complete form - show helpful message
+                                    alert('Please complete the embedded form above. Once you submit it, you can mark this lesson as complete.')
+                                  }
                                 }
                               }
                             }}
